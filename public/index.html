@@ -9,12 +9,15 @@
 <body>
   <header>
     <h1>VisionVault</h1>
-    <nav>
-      <!-- Placeholder for navigation -->
-    </nav>
+    <div class="controls">
+      <form id="uploadForm">
+        <input type="file" name="image" accept="image/png,image/jpeg" />
+        <button type="submit">Upload</button>
+      </form>
+      <input type="text" id="search" placeholder="Search tags" />
+    </div>
   </header>
   <main id="gallery">
-    <!-- Placeholder for image gallery -->
     <p class="placeholder">Galerie wird hier erscheinen...</p>
   </main>
   <footer>

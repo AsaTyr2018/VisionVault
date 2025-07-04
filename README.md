@@ -2,7 +2,7 @@
 A automatic Meta Tagging Image Board for AI Generated Content
 
 ## Getting Started
-This repository contains a basic web server skeleton for the VisionVault project. It provides a starting point to implement the "Neo-Technical Elegance" design and placeholder API routes.
+This repository contains the first gallery framework for VisionVault. Images can be uploaded, metadata is automatically extracted and stored in a local SQLite database. Tags parsed from prompts are searchable via the gallery interface.
 
 ### Prerequisites
 - [Node.js](https://nodejs.org/) 16 or higher
@@ -15,7 +15,7 @@ npm start
 The server will start on [http://localhost:3000](http://localhost:3000).
 
 ### Project Structure
-- **src/server.js** – Express server with placeholder endpoints.
-- **public/** – Static frontend files using the "Neo-Technical Elegance" style.
+- **src/server.js** – Express server with image upload and search API.
+- **public/** – Static frontend implementing a simple gallery.
 
-This framework is a foundation to build metadata extraction, search and categorization features.
+Upload images via the form on the main page. The metadata found in PNG files under the `Parameters` field is parsed automatically.

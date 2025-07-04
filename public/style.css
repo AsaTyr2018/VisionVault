@@ -18,11 +18,27 @@ header {
   padding: 1rem 2rem;
   background: var(--bg-dark);
   border-bottom: 2px solid var(--accent-cobalt);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
 }
 
 h1 {
   margin: 0;
   color: var(--accent-violet);
+}
+
+.controls {
+  margin-left: auto;
+  display: flex;
+  gap: 0.5rem;
+}
+
+img {
+  width: 100%;
+  height: auto;
+  display: block;
+  border: 1px solid var(--accent-cobalt);
 }
 
 #gallery {
