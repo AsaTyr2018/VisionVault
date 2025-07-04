@@ -1,0 +1,40 @@
+:root {
+  --bg-dark: #1f2937; /* charcoal */
+  --bg-light: #f4f5f6; /* slate white */
+  --accent-violet: #8a2be2; /* electric violet */
+  --accent-cobalt: #0047ab; /* cobalt */
+  --accent-teal: #008080; /* teal */
+  --text-color: #e5e7eb; /* light gray */
+}
+
+body {
+  margin: 0;
+  font-family: 'Inter', 'IBM Plex Sans', sans-serif;
+  background-color: var(--bg-dark);
+  color: var(--text-color);
+}
+
+header {
+  padding: 1rem 2rem;
+  background: var(--bg-dark);
+  border-bottom: 2px solid var(--accent-cobalt);
+}
+
+h1 {
+  margin: 0;
+  color: var(--accent-violet);
+}
+
+#gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem;
+  padding: 2rem;
+}
+
+.placeholder {
+  grid-column: 1 / -1;
+  text-align: center;
+  font-style: italic;
+  color: var(--accent-teal);
+}

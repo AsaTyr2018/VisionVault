@@ -1,0 +1,12 @@
+{
+  "name": "visionvault",
+  "version": "0.1.0",
+  "description": "Skeleton web server for VisionVault",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}
