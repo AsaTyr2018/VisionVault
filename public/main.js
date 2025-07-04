@@ -123,6 +123,10 @@ function createItem(img) {
   const el = document.createElement('img');
   el.src = img.url;
   el.alt = img.prompt || '';
+  el.addEventListener('load', () => {
+    if (!link.dataset.pswpWidth) link.dataset.pswpWidth = el.naturalWidth;
+    if (!link.dataset.pswpHeight) link.dataset.pswpHeight = el.naturalHeight;
+  });
   link.appendChild(el);
 
   const meta = document.createElement('div');
