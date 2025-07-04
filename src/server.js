@@ -165,6 +165,22 @@ app.get('/api/images', (req, res) => {
   res.json(images);
 });
 
+// Aggregate tag counts for tag cloud
+app.get('/api/tags', (_req, res) => {
+  const rows = db.prepare('SELECT tags FROM images').all();
+  const counts = {};
+  rows.forEach((r) => {
+    const tagList = (r.tags || '').split(',').map((t) => t.trim().toLowerCase());
+    tagList.forEach((t) => {
+      if (t) counts[t] = (counts[t] || 0) + 1;
+    });
+  });
+  const tags = Object.entries(counts)
+    .map(([tag, count]) => ({ tag, count }))
+    .sort((a, b) => b.count - a.count);
+  res.json(tags);
+});
+
 // Remove a single image by id
 app.delete('/api/images/:id', (req, res) => {
   const id = parseInt(req.params.id, 10);
