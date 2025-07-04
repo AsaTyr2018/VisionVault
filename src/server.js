@@ -152,6 +152,43 @@ app.get('/api/images', (req, res) => {
   res.json(images);
 });
 
+// Remove a single image by id
+app.delete('/api/images/:id', (req, res) => {
+  const id = parseInt(req.params.id, 10);
+  if (!id) return res.status(400).json({ error: 'Invalid id' });
+  const row = db.prepare('SELECT filename FROM images WHERE id = ?').get(id);
+  if (!row) return res.status(404).json({ error: 'Not found' });
+  const filePath = path.join(uploadDir, row.filename);
+  try {
+    fs.unlinkSync(filePath);
+  } catch (e) {
+    // ignore missing files
+  }
+  db.prepare('DELETE FROM images WHERE id = ?').run(id);
+  res.json({ success: true });
+});
+
+// Bulk removal endpoint
+app.post('/api/images/delete', (req, res) => {
+  const ids = Array.isArray(req.body.ids) ? req.body.ids : [];
+  if (!ids.length) return res.status(400).json({ error: 'No ids provided' });
+  const getStmt = db.prepare('SELECT filename FROM images WHERE id = ?');
+  const delStmt = db.prepare('DELETE FROM images WHERE id = ?');
+  ids.forEach((id) => {
+    const row = getStmt.get(id);
+    if (row) {
+      const filePath = path.join(uploadDir, row.filename);
+      try {
+        fs.unlinkSync(filePath);
+      } catch (e) {
+        // ignore
+      }
+      delStmt.run(id);
+    }
+  });
+  res.json({ success: true, count: ids.length });
+});
+
 app.listen(PORT, () => {
   console.log(`VisionVault server running on port ${PORT}`);
 });
