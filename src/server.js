@@ -149,11 +149,13 @@ app.get('/api/images', (req, res) => {
 
   const images = rows.map((r) => {
     const meta = parseMetadata(r.metadata || '');
+    const tagSource =
+      r.tags && r.tags.includes(',') ? r.tags : r.prompt || r.tags || '';
     return {
       id: r.id,
       url: `/images/${r.filename}`,
       prompt: meta.prompt || r.prompt,
-      tags: r.tags ? r.tags.split(',') : [],
+      tags: toTags(tagSource),
       metadata: r.metadata,
       model: meta.model,
       seed: meta.seed,
@@ -167,10 +169,12 @@ app.get('/api/images', (req, res) => {
 
 // Aggregate tag counts for tag cloud
 app.get('/api/tags', (_req, res) => {
-  const rows = db.prepare('SELECT tags FROM images').all();
+  const rows = db.prepare('SELECT tags, prompt FROM images').all();
   const counts = {};
   rows.forEach((r) => {
-    const tagList = toTags(r.tags || '');
+    const source =
+      r.tags && r.tags.includes(',') ? r.tags : r.prompt || r.tags || '';
+    const tagList = toTags(source);
     tagList.forEach((t) => {
       if (t) counts[t] = (counts[t] || 0) + 1;
     });
