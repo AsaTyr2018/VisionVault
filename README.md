@@ -18,4 +18,4 @@ The server will start on [http://localhost:3000](http://localhost:3000).
 - **src/server.js** – Express server with image upload and search API.
 - **public/** – Static frontend implementing a simple gallery.
 
-Upload one or multiple images via the form on the main page. The metadata found in PNG files under the `Parameters` field is parsed automatically.
+Upload images using the drag-and-drop area on the main page. The metadata found in PNG files under the `Parameters` field is parsed automatically.
