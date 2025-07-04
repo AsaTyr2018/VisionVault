@@ -1,7 +1,7 @@
 const gallery = document.getElementById('gallery');
 const drawer = document.getElementById('drawer');
 const drawerContent = document.getElementById('drawerContent');
-const drawerClose = document.getElementById('drawerClose');
+let bsDrawer;
 const sidebar = document.getElementById('sidebar');
 const toggleSidebarBtn = document.getElementById('toggleSidebar');
 const manualTagToggle = document.getElementById('manualTagToggle');
@@ -164,10 +164,10 @@ function openDrawer(img) {
     <p><strong>Seed:</strong> ${img.seed || ''}</p>
     <p><strong>Size:</strong> ${img.width || '?'}x${img.height || '?'}</p>
   `;
-  drawer.classList.add('open');
+  if (!bsDrawer) bsDrawer = new bootstrap.Offcanvas(drawer);
+  bsDrawer.show();
 }
 
-drawerClose.addEventListener('click', () => drawer.classList.remove('open'));
 window.addEventListener('scroll', checkScroll);
 
 toggleSidebarBtn.addEventListener('click', () => {

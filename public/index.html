@@ -4,14 +4,18 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>VisionVault</title>
-  <link rel="stylesheet" href="style.css">
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+  />
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <header>
-    <h1>VisionVault</h1>
-    <div class="controls">
-      <form id="uploadForm">
-        <div id="dropZone" class="drop-zone">Drag and drop images here or click</div>
+  <nav class="navbar navbar-dark bg-dark border-bottom border-primary px-3">
+    <a class="navbar-brand text-violet" href="#">VisionVault</a>
+    <div class="d-flex align-items-center flex-wrap ms-auto gap-2 controls">
+      <form id="uploadForm" class="d-flex align-items-center">
+        <div id="dropZone" class="drop-zone me-2">Drag and drop images here or click</div>
         <input
           type="file"
           name="images"
@@ -21,34 +25,43 @@
           style="display:none"
         />
       </form>
-      <input type="text" id="search" placeholder="Search tags" />
-      <button id="deleteSelected" type="button">Delete Selected</button>
-      <a href="tags.html" class="nav-link">Tag Cloud</a>
+      <input type="text" id="search" class="form-control" placeholder="Search tags" />
+      <button id="deleteSelected" type="button" class="btn btn-danger">Delete Selected</button>
+      <a href="tags.html" class="btn btn-secondary">Tag Cloud</a>
     </div>
-  </header>
-  <div id="main-container">
-    <aside id="sidebar" class="collapsed">
-      <button id="toggleSidebar">☰</button>
-      <form id="filterForm">
-        <input type="text" id="modelFilter" placeholder="Model" />
-        <input type="text" id="keywordFilter" placeholder="Keyword" />
-        <input type="text" id="resFilter" placeholder="Resolution e.g. 512x512" />
-        <label><input type="checkbox" id="loraFilter" /> LoRA</label>
-        <button type="submit">Apply</button>
-      </form>
-      <label class="tag-switch"><input type="checkbox" id="manualTagToggle" /> Manual tags</label>
-    </aside>
-    <main id="gallery" class="masonry">
-      <p class="placeholder">Galerie wird hier erscheinen...</p>
-    </main>
+  </nav>
+  <div id="main-container" class="container-fluid mt-3">
+    <div class="row">
+      <aside id="sidebar" class="col-md-3 col-lg-2 collapsed">
+        <button id="toggleSidebar" class="btn btn-outline-teal mb-2">☰</button>
+        <form id="filterForm" class="vstack gap-2">
+          <input type="text" id="modelFilter" class="form-control" placeholder="Model" />
+          <input type="text" id="keywordFilter" class="form-control" placeholder="Keyword" />
+          <input type="text" id="resFilter" class="form-control" placeholder="Resolution e.g. 512x512" />
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" id="loraFilter" />
+            <label class="form-check-label" for="loraFilter">LoRA</label>
+          </div>
+          <button type="submit" class="btn btn-primary">Apply</button>
+        </form>
+        <label class="tag-switch mt-3"><input type="checkbox" id="manualTagToggle" /> Manual tags</label>
+      </aside>
+      <main id="gallery" class="masonry col">
+        <p class="placeholder">Galerie wird hier erscheinen...</p>
+      </main>
+    </div>
   </div>
-  <div id="drawer" class="drawer">
-    <button id="drawerClose">×</button>
-    <div id="drawerContent"></div>
+  <div id="drawer" class="offcanvas offcanvas-end bg-dark text-light" tabindex="-1">
+    <div class="offcanvas-header">
+      <h5 class="offcanvas-title">Metadata</h5>
+      <button id="drawerClose" type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div id="drawerContent" class="offcanvas-body"></div>
   </div>
   <footer>
     <!-- Placeholder for footer content -->
   </footer>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script src="main.js"></script>
 </body>
 </html>
