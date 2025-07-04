@@ -125,7 +125,7 @@ app.post('/api/upload', upload.array('images'), (req, res) => {
 });
 
 app.get('/api/images', (req, res) => {
-  const { tag, model, offset = 0, limit = 20, lora } = req.query;
+  const { tag, model, offset = 0, limit = 50, lora } = req.query;
   const conditions = [];
   const params = [];
   if (tag) {

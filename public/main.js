@@ -13,7 +13,7 @@ const dropZone = document.getElementById('dropZone');
 const imageInput = document.getElementById('imageInput');
 
 let offset = 0;
-const limit = 20;
+const limit = 50;
 let loading = false;
 let filters = {
   tag: '',
@@ -70,8 +70,6 @@ function createItem(img) {
   const meta = document.createElement('div');
   meta.className = 'meta-preview';
   meta.innerHTML = `
-    <div>Model: ${img.model || ''}</div>
-    <div>Seed: ${img.seed || ''}</div>
     <div class="tag-auto">${img.tags[0] || ''}</div>
   `;
 
