@@ -7,6 +7,7 @@ const toggleSidebarBtn = document.getElementById('toggleSidebar');
 const manualTagToggle = document.getElementById('manualTagToggle');
 const filterForm = document.getElementById('filterForm');
 const searchInput = document.getElementById('search');
+const deleteSelectedBtn = document.getElementById('deleteSelected');
 
 let offset = 0;
 const limit = 20;
@@ -44,6 +45,20 @@ function createItem(img) {
   const wrapper = document.createElement('div');
   wrapper.className = 'gallery-item';
   wrapper.dataset.meta = JSON.stringify(img);
+  wrapper.dataset.id = img.id;
+
+  const checkbox = document.createElement('input');
+  checkbox.type = 'checkbox';
+  checkbox.className = 'select-box';
+  checkbox.dataset.id = img.id;
+
+  const delBtn = document.createElement('button');
+  delBtn.className = 'delete-btn';
+  delBtn.innerHTML = '×';
+  delBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    deleteImage(img.id);
+  });
 
   const el = document.createElement('img');
   el.src = img.url;
@@ -54,13 +69,40 @@ function createItem(img) {
   meta.innerHTML = `
     <div>Model: ${img.model || ''}</div>
     <div>Seed: ${img.seed || ''}</div>
-    <div class="tag-auto">${img.tags.join(', ')}</div>
+    <div class="tag-auto">${img.tags[0] || ''}</div>
   `;
 
   wrapper.appendChild(el);
   wrapper.appendChild(meta);
-  wrapper.addEventListener('click', () => openDrawer(img));
+  wrapper.appendChild(checkbox);
+  wrapper.appendChild(delBtn);
+  wrapper.addEventListener('click', (e) => {
+    if (e.target === checkbox || e.target === delBtn) return;
+    openDrawer(img);
+  });
   return wrapper;
+}
+
+async function deleteImage(id) {
+  await fetch(`/api/images/${id}`, { method: 'DELETE' });
+  const el = document.querySelector(`.gallery-item[data-id="${id}"]`);
+  if (el) el.remove();
+}
+
+async function deleteSelected() {
+  const ids = Array.from(document.querySelectorAll('.select-box:checked')).map(
+    (cb) => parseInt(cb.dataset.id, 10)
+  );
+  if (!ids.length) return;
+  await fetch('/api/images/delete', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ ids }),
+  });
+  ids.forEach((id) => {
+    const el = document.querySelector(`.gallery-item[data-id="${id}"]`);
+    if (el) el.remove();
+  });
 }
 
 function renderImages(images, append = true) {
@@ -130,6 +172,8 @@ manualTagToggle.addEventListener('change', () => {
     el.style.display = showManual ? 'none' : '';
   });
 });
+
+deleteSelectedBtn.addEventListener('click', deleteSelected);
 
 // initial load
 loadMore(true);
