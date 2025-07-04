@@ -14,6 +14,10 @@ npm start
 ```
 The server will start on [http://localhost:3000](http://localhost:3000).
 
+If you are upgrading from a previous version of VisionVault, the server will
+automatically update your existing `visionvault.db` file to include a
+`created_at` column used for sorting images by upload time.
+
 ### Project Structure
 - **src/server.js** – Express server with image upload and search API.
 - **public/** – Static frontend implementing a simple gallery.

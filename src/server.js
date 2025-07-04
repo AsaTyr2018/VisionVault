@@ -19,6 +19,19 @@ db.prepare(`CREATE TABLE IF NOT EXISTS images (
 )`)
   .run();
 
+// Backwards compatibility: older versions of the database might miss the
+// `created_at` column. Check and add it if necessary so inserts won't fail.
+const cols = db.prepare('PRAGMA table_info(images)').all();
+if (!cols.some((c) => c.name === 'created_at')) {
+  db.prepare(
+    "ALTER TABLE images ADD COLUMN created_at DATETIME DEFAULT CURRENT_TIMESTAMP"
+  ).run();
+  // Give existing rows a timestamp so sort/order queries remain consistent
+  db.prepare(
+    "UPDATE images SET created_at = datetime('now') WHERE created_at IS NULL"
+  ).run();
+}
+
 // File upload configuration
 const uploadDir = path.join(__dirname, '..', 'public', 'images');
 const upload = multer({ dest: uploadDir });
