@@ -22,6 +22,14 @@ let filters = {
   resolution: ''
 };
 
+// Apply tag from query parameter if present
+const urlParams = new URLSearchParams(window.location.search);
+const tagParam = urlParams.get('tag');
+if (tagParam) {
+  filters.tag = tagParam;
+  if (searchInput) searchInput.value = tagParam;
+}
+
 function buildQuery() {
   const params = new URLSearchParams();
   if (filters.tag) params.set('tag', filters.tag);

@@ -200,3 +200,27 @@ img {
 .drop-zone.dragover {
   background: rgba(0, 0, 0, 0.3);
 }
+
+.nav-link {
+  color: var(--accent-teal);
+  text-decoration: none;
+  padding: 0.25rem 0.5rem;
+  border: 1px solid var(--accent-teal);
+  border-radius: 4px;
+}
+
+.tag-cloud {
+  position: relative;
+  width: 100%;
+  max-width: 600px;
+  height: 600px;
+  margin: 2rem auto;
+}
+
+.tag-item {
+  position: absolute;
+  color: var(--accent-violet);
+  cursor: pointer;
+  white-space: nowrap;
+  user-select: none;
+}
