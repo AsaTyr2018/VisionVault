@@ -14,6 +14,16 @@ npm start
 ```
 The server will start on [http://localhost:3000](http://localhost:3000).
 
+### Automatic Updates
+To start the server with an update check, run:
+
+```bash
+./prestart.sh
+```
+The script fetches any changes from the Git repository and prompts you to update.
+If `package.json` or `package-lock.json` changed, `npm install` will be executed
+before launching the server.
+
 If you are upgrading from a previous version of VisionVault, the server will
 automatically update your existing `visionvault.db` file to include a
 `created_at` column used for sorting images by upload time.
