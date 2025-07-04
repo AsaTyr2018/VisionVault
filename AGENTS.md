@@ -96,6 +96,7 @@ A fusion of **minimalist clarity** and **futuristic intelligence**. The user sho
 ### **🧠 Smart Features**
 
 * Auto-group similar images into "Stacks" (variations of same prompt)
+* PhotoSwipe image display. When clicking on a Preview image, its starts up PhotoSwipe and displays it full size (Depending on browser size)
 * Show image lineage:
   “This image was generated from this prompt → edited with this LoRA → final result”
 * Optional Timeline View: See creation history visually like Git commits
