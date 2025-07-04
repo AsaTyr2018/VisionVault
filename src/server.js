@@ -38,7 +38,11 @@ fs.mkdirSync(uploadDir, { recursive: true });
 const storage = multer.diskStorage({
   destination: uploadDir,
   filename: (_req, file, cb) => {
-    const ext = path.extname(file.originalname);
+    let ext = path.extname(file.originalname);
+    if (!ext) {
+      const map = { 'image/jpeg': '.jpg', 'image/png': '.png' };
+      ext = map[file.mimetype] || '';
+    }
     const name = `${Date.now()}-${Math.round(Math.random() * 1e6)}${ext}`;
     cb(null, name);
   }
