@@ -68,13 +68,19 @@ function extractParameters(imagePath) {
 
 function parsePrompt(params) {
   const m = /Prompt:(.*?)(?:Negative prompt:|$)/i.exec(params);
-  return m ? m[1].trim() : '';
+  if (!m) return '';
+  return m[1].trim().replace(/^"|"$/g, '');
 }
 
 function toTags(prompt) {
   return prompt
     .split(',')
-    .map((t) => t.trim().toLowerCase())
+    .map((t) =>
+      t
+        .trim()
+        .replace(/^"|"$/g, '')
+        .toLowerCase()
+    )
     .filter((t) => t);
 }
 
