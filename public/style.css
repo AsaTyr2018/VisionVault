@@ -210,17 +210,27 @@ img {
 }
 
 .tag-cloud {
-  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem;
   width: 100%;
-  max-width: 600px;
-  height: 600px;
+  max-width: 800px;
   margin: 2rem auto;
 }
 
 .tag-item {
-  position: absolute;
-  color: var(--accent-violet);
+  display: inline-block;
+  padding: 0.25rem 0.5rem;
+  background: var(--accent-cobalt);
+  color: var(--text-color);
+  border-radius: 4px;
   cursor: pointer;
   white-space: nowrap;
   user-select: none;
+  transition: transform 0.2s;
+}
+
+.tag-item:hover {
+  transform: scale(1.1);
 }
