@@ -16,6 +16,11 @@ const uploadForm = document.getElementById('uploadForm');
 const dropZone = document.getElementById('dropZone');
 const imageInput = document.getElementById('imageInput');
 
+// Simple helper so all debug output is grouped and easy to filter
+function debug(...args) {
+  console.log('[VisionVault]', ...args);
+}
+
 let offset = 0;
 const limit = 50;
 let loading = false;
@@ -52,8 +57,17 @@ function buildQuery() {
 }
 
 async function fetchImages() {
-  const res = await fetch('/api/images?' + buildQuery());
-  return res.json();
+  const query = '/api/images?' + buildQuery();
+  debug('Requesting images:', query);
+  try {
+    const res = await fetch(query);
+    const data = await res.json();
+    debug('Received', data.length, 'images');
+    return data;
+  } catch (err) {
+    console.error('[VisionVault] Failed to fetch images', err);
+    return [];
+  }
 }
 
 function createItem(img) {
@@ -84,6 +98,7 @@ function createItem(img) {
     e.preventDefault();
     const items = Array.from(gallery.querySelectorAll('a.pswp-link'));
     const index = items.indexOf(link);
+    debug('Thumbnail clicked', { id: img.id, index });
     if (lightbox && index > -1) {
       lightbox.loadAndOpen(index);
     }
@@ -169,6 +184,7 @@ async function loadMore(reset = false) {
   loading = true;
   if (reset) offset = 0;
   const imgs = await fetchImages();
+  debug('Loading images', { reset, count: imgs.length, offset });
   renderImages(imgs, !reset);
   offset += imgs.length;
   loading = false;
@@ -189,6 +205,7 @@ function openDrawer(img) {
     <p><strong>Seed:</strong> ${img.seed || ''}</p>
     <p><strong>Size:</strong> ${img.width || '?'}x${img.height || '?'}</p>
   `;
+  debug('Opening metadata drawer for image', img.id);
   if (!bsDrawer) bsDrawer = new bootstrap.Offcanvas(drawer);
   bsDrawer.show();
 }
@@ -241,6 +258,10 @@ lightbox = new PhotoSwipeLightbox({
   children: 'a.pswp-link',
   pswpModule: PhotoSwipe
 });
+debug('Initializing PhotoSwipeLightbox');
+lightbox.on('beforeOpen', () => debug('PhotoSwipe beforeOpen'));
+lightbox.on('change', () => debug('PhotoSwipe slide changed'));
+lightbox.on('close', () => debug('PhotoSwipe closed'));
 lightbox.init();
 
 // initial load
