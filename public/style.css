@@ -22,6 +22,17 @@ nav.navbar {
   color: var(--accent-violet) !important;
 }
 
+/* Eye-catching gradient logo */
+.logo-gradient {
+  font-weight: 700;
+  font-size: 1.75rem;
+  background: linear-gradient(45deg, var(--accent-violet), var(--accent-teal));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-shadow: 0 0 6px rgba(138, 43, 226, 0.6);
+}
+
 h1 {
   margin: 0;
   color: var(--accent-violet);
