@@ -237,3 +237,15 @@ img {
 .tag-item:hover {
   transform: scale(1.1);
 }
+
+/* Upload page layout */
+.upload-page .upload-container {
+  max-width: 600px;
+  margin: 4rem auto;
+}
+
+.upload-page .upload-drop-zone {
+  padding: 3rem;
+  font-size: 1.25rem;
+  margin: 1rem 0;
+}

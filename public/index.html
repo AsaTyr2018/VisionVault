@@ -12,22 +12,12 @@
 </head>
 <body>
   <nav class="navbar navbar-dark bg-dark border-bottom border-primary px-3">
-    <a class="navbar-brand logo-gradient" href="#">VisionVault</a>
+    <a class="navbar-brand logo-gradient" href="index.html">VisionVault</a>
     <div class="d-flex align-items-center flex-wrap ms-auto gap-2 controls">
-      <form id="uploadForm" class="d-flex align-items-center">
-        <div id="dropZone" class="drop-zone me-2">Drag and drop images here or click</div>
-        <input
-          type="file"
-          name="images"
-          id="imageInput"
-          accept="image/png,image/jpeg"
-          multiple
-          style="display:none"
-        />
-      </form>
       <input type="text" id="search" class="form-control" placeholder="Search tags" />
       <button id="deleteSelected" type="button" class="btn btn-danger">Delete Selected</button>
       <a href="tags.html" class="btn btn-secondary">Tag Cloud</a>
+      <a href="upload.html" class="btn btn-secondary">Upload</a>
     </div>
   </nav>
   <div id="main-container" class="container-fluid mt-3">
