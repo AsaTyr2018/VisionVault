@@ -32,4 +32,4 @@ automatically update your existing `visionvault.db` file to include a
 - **src/server.js** – Express server with image upload and search API.
 - **public/** – Static frontend implementing a simple gallery.
 
-Upload images using the drag-and-drop area on the main page. The metadata found in PNG files under the `Parameters` field is parsed automatically.
+Upload images through `upload.html`, which offers a drag-and-drop zone for quick imports. The metadata found in PNG files under the `Parameters` field is parsed automatically.

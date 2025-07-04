@@ -244,19 +244,21 @@ manualTagToggle.addEventListener('change', () => {
 
 deleteSelectedBtn.addEventListener('click', deleteSelected);
 
-uploadForm.addEventListener('submit', (e) => e.preventDefault());
-dropZone.addEventListener('click', () => imageInput.click());
-dropZone.addEventListener('dragover', (e) => {
-  e.preventDefault();
-  dropZone.classList.add('dragover');
-});
-dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
-dropZone.addEventListener('drop', (e) => {
-  e.preventDefault();
-  dropZone.classList.remove('dragover');
-  uploadFiles(e.dataTransfer.files);
-});
-imageInput.addEventListener('change', () => uploadFiles(imageInput.files));
+if (uploadForm && dropZone && imageInput) {
+  uploadForm.addEventListener('submit', (e) => e.preventDefault());
+  dropZone.addEventListener('click', () => imageInput.click());
+  dropZone.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    dropZone.classList.add('dragover');
+  });
+  dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+  dropZone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    dropZone.classList.remove('dragover');
+    uploadFiles(e.dataTransfer.files);
+  });
+  imageInput.addEventListener('change', () => uploadFiles(imageInput.files));
+}
 
 // initial load
 loadMore(true);
