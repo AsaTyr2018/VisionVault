@@ -1,7 +1,11 @@
+import PhotoSwipeLightbox from 'https://cdn.jsdelivr.net/npm/photoswipe@5/dist/photoswipe-lightbox.esm.js';
+import PhotoSwipe from 'https://cdn.jsdelivr.net/npm/photoswipe@5/dist/photoswipe.esm.js';
+
 const gallery = document.getElementById('gallery');
 const drawer = document.getElementById('drawer');
 const drawerContent = document.getElementById('drawerContent');
 let bsDrawer;
+let lightbox;
 const sidebar = document.getElementById('sidebar');
 const toggleSidebarBtn = document.getElementById('toggleSidebar');
 const manualTagToggle = document.getElementById('manualTagToggle');
@@ -71,9 +75,16 @@ function createItem(img) {
     deleteImage(img.id);
   });
 
+  const link = document.createElement('a');
+  link.href = img.url;
+  link.className = 'pswp-link';
+  if (img.width) link.dataset.pswpWidth = img.width;
+  if (img.height) link.dataset.pswpHeight = img.height;
+
   const el = document.createElement('img');
   el.src = img.url;
   el.alt = img.prompt || '';
+  link.appendChild(el);
 
   const meta = document.createElement('div');
   meta.className = 'meta-preview';
@@ -81,12 +92,17 @@ function createItem(img) {
     <div class="tag-auto">${img.tags[0] || ''}</div>
   `;
 
-  wrapper.appendChild(el);
+  wrapper.appendChild(link);
   wrapper.appendChild(meta);
   wrapper.appendChild(checkbox);
   wrapper.appendChild(delBtn);
   wrapper.addEventListener('click', (e) => {
-    if (e.target === checkbox || e.target === delBtn) return;
+    if (
+      e.target === checkbox ||
+      e.target === delBtn ||
+      e.target.closest('a.pswp-link')
+    )
+      return;
     openDrawer(img);
   });
   return wrapper;
@@ -137,6 +153,7 @@ function renderImages(images, append = true) {
     return;
   }
   images.forEach((img) => gallery.appendChild(createItem(img)));
+  if (lightbox) lightbox.refresh();
 }
 
 async function loadMore(reset = false) {
@@ -210,6 +227,13 @@ dropZone.addEventListener('drop', (e) => {
   uploadFiles(e.dataTransfer.files);
 });
 imageInput.addEventListener('change', () => uploadFiles(imageInput.files));
+
+lightbox = new PhotoSwipeLightbox({
+  gallery: '#gallery',
+  children: 'a.pswp-link',
+  pswpModule: PhotoSwipe
+});
+lightbox.init();
 
 // initial load
 loadMore(true);
