@@ -80,6 +80,14 @@ function createItem(img) {
   link.className = 'pswp-link';
   if (img.width) link.dataset.pswpWidth = img.width;
   if (img.height) link.dataset.pswpHeight = img.height;
+  link.addEventListener('click', (e) => {
+    e.preventDefault();
+    const items = Array.from(gallery.querySelectorAll('a.pswp-link'));
+    const index = items.indexOf(link);
+    if (lightbox && index > -1) {
+      lightbox.loadAndOpen(index);
+    }
+  });
 
   const el = document.createElement('img');
   el.src = img.url;
