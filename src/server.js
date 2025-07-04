@@ -34,7 +34,16 @@ if (!cols.some((c) => c.name === 'created_at')) {
 
 // File upload configuration
 const uploadDir = path.join(__dirname, '..', 'public', 'images');
-const upload = multer({ dest: uploadDir });
+fs.mkdirSync(uploadDir, { recursive: true });
+const storage = multer.diskStorage({
+  destination: uploadDir,
+  filename: (_req, file, cb) => {
+    const ext = path.extname(file.originalname);
+    const name = `${Date.now()}-${Math.round(Math.random() * 1e6)}${ext}`;
+    cb(null, name);
+  }
+});
+const upload = multer({ storage });
 
 app.use(express.json());
 app.use(express.static(path.join(__dirname, '..', 'public')));
