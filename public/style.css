@@ -14,13 +14,12 @@ body {
   color: var(--text-color);
 }
 
-header {
-  padding: 1rem 2rem;
-  background: var(--bg-dark);
+nav.navbar {
   border-bottom: 2px solid var(--accent-cobalt);
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
+}
+
+.text-violet {
+  color: var(--accent-violet) !important;
 }
 
 h1 {
@@ -40,7 +39,7 @@ h1 {
     flex-direction: column;
     margin-left: 0;
   }
-  header {
+  nav.navbar {
     flex-direction: column;
     align-items: flex-start;
   }
@@ -72,9 +71,7 @@ img {
   opacity: 1;
 }
 
-#main-container {
-  display: flex;
-}
+
 
 #sidebar {
   width: 250px;
@@ -127,24 +124,9 @@ img {
   gap: 0.25rem;
 }
 
+/* Offcanvas tweaks */
 #drawer {
-  position: fixed;
-  top: 0;
-  right: 0;
-  width: 320px;
-  height: 100%;
-  background: var(--bg-dark);
   border-left: 2px solid var(--accent-cobalt);
-  padding: 1rem;
-  color: var(--text-color);
-  transform: translateX(100%);
-  transition: transform 0.3s;
-  overflow-y: auto;
-  z-index: 3;
-}
-
-#drawer.open {
-  transform: translateX(0);
 }
 
 #drawerClose {
@@ -199,6 +181,16 @@ img {
 
 .drop-zone.dragover {
   background: rgba(0, 0, 0, 0.3);
+}
+
+.btn-outline-teal {
+  color: var(--accent-teal);
+  border-color: var(--accent-teal);
+}
+
+.btn-outline-teal:hover {
+  background-color: var(--accent-teal);
+  color: var(--bg-light);
 }
 
 .nav-link {

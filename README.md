@@ -1,5 +1,5 @@
 # VisionVault
-A automatic Meta Tagging Image Board for AI Generated Content
+A automatic Meta Tagging Image Board for AI Generated Content. The interface is built with modern Bootstrap 5 styles for a responsive experience.
 
 ## Getting Started
 This repository contains the first gallery framework for VisionVault. Images can be uploaded in bulk, metadata is automatically extracted and stored in a local SQLite database. Tags parsed from prompts are searchable via the gallery interface. Hover over images in the gallery to reveal prompt and tag details.
