@@ -31,6 +31,22 @@ let filters = {
   resolution: ''
 };
 
+function initLightbox() {
+  if (lightbox) {
+    lightbox.destroy();
+  }
+  lightbox = new PhotoSwipeLightbox({
+    gallery: '#gallery',
+    children: 'a.pswp-link',
+    pswpModule: PhotoSwipe
+  });
+  debug('Initializing PhotoSwipeLightbox');
+  lightbox.on('beforeOpen', () => debug('PhotoSwipe beforeOpen'));
+  lightbox.on('change', () => debug('PhotoSwipe slide changed'));
+  lightbox.on('close', () => debug('PhotoSwipe closed'));
+  lightbox.init();
+}
+
 // Apply tag from query parameter if present
 const urlParams = new URLSearchParams(window.location.search);
 const tagParam = urlParams.get('tag');
@@ -176,7 +192,7 @@ function renderImages(images, append = true) {
     return;
   }
   images.forEach((img) => gallery.appendChild(createItem(img)));
-  if (lightbox) lightbox.refresh();
+  initLightbox();
 }
 
 async function loadMore(reset = false) {
@@ -253,16 +269,7 @@ dropZone.addEventListener('drop', (e) => {
 });
 imageInput.addEventListener('change', () => uploadFiles(imageInput.files));
 
-lightbox = new PhotoSwipeLightbox({
-  gallery: '#gallery',
-  children: 'a.pswp-link',
-  pswpModule: PhotoSwipe
-});
-debug('Initializing PhotoSwipeLightbox');
-lightbox.on('beforeOpen', () => debug('PhotoSwipe beforeOpen'));
-lightbox.on('change', () => debug('PhotoSwipe slide changed'));
-lightbox.on('close', () => debug('PhotoSwipe closed'));
-lightbox.init();
+initLightbox();
 
 // initial load
 loadMore(true);
