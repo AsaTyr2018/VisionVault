@@ -11,14 +11,15 @@
     <h1>VisionVault</h1>
     <div class="controls">
       <form id="uploadForm">
+        <div id="dropZone" class="drop-zone">Drag and drop images here or click</div>
         <input
           type="file"
           name="images"
           id="imageInput"
           accept="image/png,image/jpeg"
           multiple
+          style="display:none"
         />
-        <button type="submit">Upload</button>
       </form>
       <input type="text" id="search" placeholder="Search tags" />
       <button id="deleteSelected" type="button">Delete Selected</button>
