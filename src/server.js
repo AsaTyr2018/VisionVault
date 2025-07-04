@@ -73,8 +73,8 @@ function parsePrompt(params) {
 
 function toTags(prompt) {
   return prompt
-    .split(/[ ,]+/)
-    .map((t) => t.toLowerCase())
+    .split(',')
+    .map((t) => t.trim().toLowerCase())
     .filter((t) => t);
 }
 
