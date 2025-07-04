@@ -170,7 +170,7 @@ app.get('/api/tags', (_req, res) => {
   const rows = db.prepare('SELECT tags FROM images').all();
   const counts = {};
   rows.forEach((r) => {
-    const tagList = (r.tags || '').split(',').map((t) => t.trim().toLowerCase());
+    const tagList = toTags(r.tags || '');
     tagList.forEach((t) => {
       if (t) counts[t] = (counts[t] || 0) + 1;
     });
