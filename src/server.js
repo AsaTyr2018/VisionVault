@@ -64,19 +64,21 @@ function toTags(prompt) {
     .filter((t) => t);
 }
 
-app.post('/api/upload', upload.single('image'), (req, res) => {
-  const { file } = req;
-  if (!file) return res.status(400).json({ error: 'No file uploaded' });
+app.post('/api/upload', upload.array('images'), (req, res) => {
+  const files = req.files || [];
+  if (!files.length) return res.status(400).json({ error: 'No files uploaded' });
 
-  const metaString = extractParameters(file.path);
-  const prompt = parsePrompt(metaString);
-  const tags = toTags(prompt).join(',');
-
-  db.prepare(
+  const stmt = db.prepare(
     'INSERT INTO images (filename, prompt, tags, metadata) VALUES (?, ?, ?, ?)'
-  ).run(path.basename(file.path), prompt, tags, metaString);
+  );
+  files.forEach((file) => {
+    const metaString = extractParameters(file.path);
+    const prompt = parsePrompt(metaString);
+    const tags = toTags(prompt).join(',');
+    stmt.run(path.basename(file.path), prompt, tags, metaString);
+  });
 
-  res.json({ success: true });
+  res.json({ success: true, count: files.length });
 });
 
 app.get('/api/images', (req, res) => {

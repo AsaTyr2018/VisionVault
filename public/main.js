@@ -15,10 +15,20 @@ function renderImages(images) {
     return;
   }
   images.forEach((img) => {
+    const wrapper = document.createElement('div');
+    wrapper.className = 'gallery-item';
     const el = document.createElement('img');
     el.src = img.url;
     el.alt = img.prompt;
-    gallery.appendChild(el);
+    const overlay = document.createElement('div');
+    overlay.className = 'info-overlay';
+    overlay.innerHTML = `
+      <strong>${img.prompt || 'No prompt'}</strong>
+      <div>${img.tags.join(', ')}</div>
+    `;
+    wrapper.appendChild(el);
+    wrapper.appendChild(overlay);
+    gallery.appendChild(wrapper);
   });
 }
 

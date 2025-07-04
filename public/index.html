@@ -11,7 +11,13 @@
     <h1>VisionVault</h1>
     <div class="controls">
       <form id="uploadForm">
-        <input type="file" name="image" accept="image/png,image/jpeg" />
+        <input
+          type="file"
+          name="images"
+          id="imageInput"
+          accept="image/png,image/jpeg"
+          multiple
+        />
         <button type="submit">Upload</button>
       </form>
       <input type="text" id="search" placeholder="Search tags" />
