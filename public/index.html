@@ -23,9 +23,26 @@
       <input type="text" id="search" placeholder="Search tags" />
     </div>
   </header>
-  <main id="gallery">
-    <p class="placeholder">Galerie wird hier erscheinen...</p>
-  </main>
+  <div id="main-container">
+    <aside id="sidebar" class="collapsed">
+      <button id="toggleSidebar">☰</button>
+      <form id="filterForm">
+        <input type="text" id="modelFilter" placeholder="Model" />
+        <input type="text" id="keywordFilter" placeholder="Keyword" />
+        <input type="text" id="resFilter" placeholder="Resolution e.g. 512x512" />
+        <label><input type="checkbox" id="loraFilter" /> LoRA</label>
+        <button type="submit">Apply</button>
+      </form>
+      <label class="tag-switch"><input type="checkbox" id="manualTagToggle" /> Manual tags</label>
+    </aside>
+    <main id="gallery" class="masonry">
+      <p class="placeholder">Galerie wird hier erscheinen...</p>
+    </main>
+  </div>
+  <div id="drawer" class="drawer">
+    <button id="drawerClose">×</button>
+    <div id="drawerContent"></div>
+  </div>
   <footer>
     <!-- Placeholder for footer content -->
   </footer>

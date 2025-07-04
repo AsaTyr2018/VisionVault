@@ -14,7 +14,8 @@ db.prepare(`CREATE TABLE IF NOT EXISTS images (
   filename TEXT,
   prompt TEXT,
   tags TEXT,
-  metadata TEXT
+  metadata TEXT,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 )`)
   .run();
 
@@ -64,12 +65,41 @@ function toTags(prompt) {
     .filter((t) => t);
 }
 
+function parseMetadata(meta) {
+  const m = {
+    model: /Model:(.*?)(?:,|$)/i,
+    seed: /Seed:\s*(\d+)/i,
+    steps: /Steps:\s*(\d+)/i,
+    cfg: /CFG scale:\s*([\d.]+)/i,
+    sampler: /Sampler:(.*?)(?:,|$)/i,
+    size: /Size:\s*(\d+)x(\d+)/i,
+  };
+  const res = {};
+  if (m.model.test(meta)) res.model = m.model.exec(meta)[1].trim();
+  if (m.seed.test(meta)) res.seed = parseInt(m.seed.exec(meta)[1], 10);
+  if (m.steps.test(meta)) res.steps = parseInt(m.steps.exec(meta)[1], 10);
+  if (m.cfg.test(meta)) res.cfg = parseFloat(m.cfg.exec(meta)[1]);
+  if (m.sampler.test(meta)) res.sampler = m.sampler.exec(meta)[1].trim();
+  if (m.size.test(meta)) {
+    const [, w, h] = m.size.exec(meta);
+    res.width = parseInt(w, 10);
+    res.height = parseInt(h, 10);
+  }
+  const neg = /Negative prompt:(.*?)(Steps:|$)/i.exec(meta);
+  if (neg) res.negativePrompt = neg[1].trim();
+  const prompt = /Prompt:(.*?)(Negative prompt:|Steps:|$)/i.exec(meta);
+  if (prompt) res.prompt = prompt[1].trim();
+  res.hasLora = /lora/i.test(meta);
+  res.hasControl = /controlnet/i.test(meta);
+  return res;
+}
+
 app.post('/api/upload', upload.array('images'), (req, res) => {
   const files = req.files || [];
   if (!files.length) return res.status(400).json({ error: 'No files uploaded' });
 
   const stmt = db.prepare(
-    'INSERT INTO images (filename, prompt, tags, metadata) VALUES (?, ?, ?, ?)'
+    'INSERT INTO images (filename, prompt, tags, metadata, created_at) VALUES (?, ?, ?, ?, datetime(\'now\'))'
   );
   files.forEach((file) => {
     const metaString = extractParameters(file.path);
@@ -82,23 +112,43 @@ app.post('/api/upload', upload.array('images'), (req, res) => {
 });
 
 app.get('/api/images', (req, res) => {
-  const { tag } = req.query;
-  let rows;
+  const { tag, model, offset = 0, limit = 20, lora } = req.query;
+  const conditions = [];
+  const params = [];
   if (tag) {
-    rows = db
-      .prepare('SELECT * FROM images WHERE tags LIKE ? ORDER BY id DESC')
-      .all(`%${tag.toLowerCase()}%`);
-  } else {
-    rows = db.prepare('SELECT * FROM images ORDER BY id DESC').all();
+    conditions.push('tags LIKE ?');
+    params.push(`%${tag.toLowerCase()}%`);
   }
+  if (model) {
+    conditions.push('metadata LIKE ?');
+    params.push(`%${model}%`);
+  }
+  if (lora === 'true') {
+    conditions.push('metadata LIKE ?');
+    params.push('%lora%');
+  }
+  let query = 'SELECT * FROM images';
+  if (conditions.length) query += ' WHERE ' + conditions.join(' AND ');
+  query += ' ORDER BY id DESC LIMIT ? OFFSET ?';
+  params.push(Number(limit));
+  params.push(Number(offset));
+  const rows = db.prepare(query).all(...params);
 
-  const images = rows.map((r) => ({
-    id: r.id,
-    url: `/images/${r.filename}`,
-    prompt: r.prompt,
-    tags: r.tags ? r.tags.split(',') : [],
-    metadata: r.metadata,
-  }));
+  const images = rows.map((r) => {
+    const meta = parseMetadata(r.metadata || '');
+    return {
+      id: r.id,
+      url: `/images/${r.filename}`,
+      prompt: meta.prompt || r.prompt,
+      tags: r.tags ? r.tags.split(',') : [],
+      metadata: r.metadata,
+      model: meta.model,
+      seed: meta.seed,
+      width: meta.width,
+      height: meta.height,
+      hasLora: meta.hasLora,
+    };
+  });
   res.json(images);
 });
 
