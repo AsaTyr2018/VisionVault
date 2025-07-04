@@ -9,10 +9,6 @@
     rel="stylesheet"
   />
   <link rel="stylesheet" href="style.css" />
-  <link
-    rel="stylesheet"
-    href="https://cdn.jsdelivr.net/npm/photoswipe@5/dist/photoswipe.css"
-  />
 </head>
 <body>
   <nav class="navbar navbar-dark bg-dark border-bottom border-primary px-3">
@@ -65,7 +61,15 @@
   <footer>
     <!-- Placeholder for footer content -->
   </footer>
-  <div id="pswp" class="pswp" tabindex="-1" role="dialog" aria-hidden="true"></div>
+  <div class="modal fade" id="imageModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content bg-dark text-light">
+        <div class="modal-body p-0 text-center">
+          <img id="modalImage" src="" class="img-fluid" alt="" />
+        </div>
+      </div>
+    </div>
+  </div>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script type="module" src="main.js"></script>
 </body>

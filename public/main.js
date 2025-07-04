@@ -1,11 +1,9 @@
-import PhotoSwipeLightbox from 'https://cdn.jsdelivr.net/npm/photoswipe@5/dist/photoswipe-lightbox.esm.js';
-import PhotoSwipe from 'https://cdn.jsdelivr.net/npm/photoswipe@5/dist/photoswipe.esm.js';
 
 const gallery = document.getElementById('gallery');
 const drawer = document.getElementById('drawer');
 const drawerContent = document.getElementById('drawerContent');
 let bsDrawer;
-let lightbox;
+let modal;
 const sidebar = document.getElementById('sidebar');
 const toggleSidebarBtn = document.getElementById('toggleSidebar');
 const manualTagToggle = document.getElementById('manualTagToggle');
@@ -31,21 +29,6 @@ let filters = {
   resolution: ''
 };
 
-function initLightbox() {
-  if (lightbox) {
-    lightbox.destroy();
-  }
-  lightbox = new PhotoSwipeLightbox({
-    gallery: '#gallery',
-    children: 'a.pswp-link',
-    pswpModule: PhotoSwipe
-  });
-  debug('Initializing PhotoSwipeLightbox');
-  lightbox.on('beforeOpen', () => debug('PhotoSwipe beforeOpen'));
-  lightbox.on('change', () => debug('PhotoSwipe slide changed'));
-  lightbox.on('close', () => debug('PhotoSwipe closed'));
-  lightbox.init();
-}
 
 // Apply tag from query parameter if present
 const urlParams = new URLSearchParams(window.location.search);
@@ -107,25 +90,18 @@ function createItem(img) {
 
   const link = document.createElement('a');
   link.href = img.url;
-  link.className = 'pswp-link';
-  if (img.width) link.dataset.pswpWidth = img.width;
-  if (img.height) link.dataset.pswpHeight = img.height;
   link.addEventListener('click', (e) => {
     e.preventDefault();
-    const items = Array.from(gallery.querySelectorAll('a.pswp-link'));
-    const index = items.indexOf(link);
-    debug('Thumbnail clicked', { id: img.id, index });
-    if (lightbox && index > -1) {
-      lightbox.loadAndOpen(index);
-    }
+    openModal(img);
   });
 
   const el = document.createElement('img');
   el.src = img.url;
   el.alt = img.prompt || '';
   el.addEventListener('load', () => {
-    if (!link.dataset.pswpWidth) link.dataset.pswpWidth = el.naturalWidth;
-    if (!link.dataset.pswpHeight) link.dataset.pswpHeight = el.naturalHeight;
+    // ensure modal image dimensions are available if needed
+    el.dataset.width = el.naturalWidth;
+    el.dataset.height = el.naturalHeight;
   });
   link.appendChild(el);
 
@@ -143,7 +119,7 @@ function createItem(img) {
     if (
       e.target === checkbox ||
       e.target === delBtn ||
-      e.target.closest('a.pswp-link')
+      e.target.closest('a')
     )
       return;
     openDrawer(img);
@@ -196,7 +172,6 @@ function renderImages(images, append = true) {
     return;
   }
   images.forEach((img) => gallery.appendChild(createItem(img)));
-  initLightbox();
 }
 
 async function loadMore(reset = false) {
@@ -228,6 +203,16 @@ function openDrawer(img) {
   debug('Opening metadata drawer for image', img.id);
   if (!bsDrawer) bsDrawer = new bootstrap.Offcanvas(drawer);
   bsDrawer.show();
+}
+
+function openModal(img) {
+  if (!modal) {
+    modal = new bootstrap.Modal(document.getElementById('imageModal'));
+  }
+  const modalImg = document.getElementById('modalImage');
+  modalImg.src = img.url;
+  modalImg.alt = img.prompt || '';
+  modal.show();
 }
 
 window.addEventListener('scroll', checkScroll);
@@ -272,8 +257,6 @@ dropZone.addEventListener('drop', (e) => {
   uploadFiles(e.dataTransfer.files);
 });
 imageInput.addEventListener('change', () => uploadFiles(imageInput.files));
-
-initLightbox();
 
 // initial load
 loadMore(true);
