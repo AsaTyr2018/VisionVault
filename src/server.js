@@ -9,6 +9,9 @@ const PORT = process.env.PORT || 3000;
 
 // Database setup. Allow overriding the location for Docker or custom setups.
 const dbPath = process.env.DB_PATH || path.join(__dirname, '..', 'visionvault.db');
+// Ensure the directory for the database exists (useful for Docker volumes)
+const dbDir = path.dirname(dbPath);
+fs.mkdirSync(dbDir, { recursive: true });
 const db = new Database(dbPath);
 db.prepare(`CREATE TABLE IF NOT EXISTS images (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
