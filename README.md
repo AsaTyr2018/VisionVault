@@ -36,6 +36,21 @@ Start with an update check using:
 This script fetches Git updates and installs dependencies if required.
 If upgrading from an older version, the database schema is adjusted automatically.
 
+### Docker Setup
+
+Use the scripts in `docker_setup/` to build a containerized instance of VisionVault.
+Run the builder and start the service with:
+
+```bash
+python docker_setup/builder.py
+cd app
+docker compose up -d
+```
+
+This creates a Docker environment with a persistent `data` volume for the SQLite
+database and uploads. Access the web interface at `http://localhost:3000`.
+To update an existing container without losing data, run `python update.py`.
+
 ### API Overview
 
 The Express server exposes the following endpoints:
