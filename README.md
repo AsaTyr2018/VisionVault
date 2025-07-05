@@ -1,8 +1,23 @@
 # VisionVault
-A automatic Meta Tagging Image Board for AI Generated Content. The interface is built with modern Bootstrap 5 styles for a responsive experience.
+
+VisionVault is a lightweight image board tailored for AI-generated artwork. Uploaded files have their embedded metadata parsed automatically so you can search and organise creations by prompt, model and other parameters. The interface uses Bootstrap 5 for a responsive gallery experience.
+
+## Features
+
+- Drag-and-drop bulk uploads with automatic extraction of PNG `Parameters` metadata
+- Images and metadata stored in a local SQLite database
+- Infinite scrolling gallery with quick tag preview
+- Filters for tags, model names, LoRA references and resolution
+- Tag cloud page showing popular keywords
+- Metadata drawer and fullscreen modal per image
+- Single or bulk deletion of images
+- Optional `prestart.sh` script to pull updates and reinstall dependencies
+
+## Use Cases
+
+VisionVault acts as a personal vault for experiments with Stable Diffusion or similar generators. By capturing prompts and model settings, it lets you track variations, compare results and revisit earlier work. Small teams can also share a common gallery to exchange ideas or manage LoRA-based workflows.
 
 ## Getting Started
-This repository contains the first gallery framework for VisionVault. Images can be uploaded in bulk, metadata is automatically extracted and stored in a local SQLite database. Tags parsed from prompts are searchable via the gallery interface. Hover over images in the gallery to reveal prompt and tag details.
 
 ### Prerequisites
 - [Node.js](https://nodejs.org/) 16 or higher
@@ -12,24 +27,28 @@ This repository contains the first gallery framework for VisionVault. Images can
 npm install
 npm start
 ```
-The server will start on [http://{serverip}:3000](http://{serverip}:3000).
+The server runs on `http://localhost:3000` by default.
 
-### Automatic Updates
-To start the server with an update check, run:
-
+Start with an update check using:
 ```bash
 ./prestart.sh
 ```
-The script fetches any changes from the Git repository and prompts you to update.
-If `package.json` or `package-lock.json` changed, `npm install` will be executed
-before launching the server.
+This script fetches Git updates and installs dependencies if required.
+If upgrading from an older version, the database schema is adjusted automatically.
 
-If you are upgrading from a previous version of VisionVault, the server will
-automatically update your existing `visionvault.db` file to include a
-`created_at` column used for sorting images by upload time.
+### API Overview
+
+The Express server exposes the following endpoints:
+
+- `POST /api/upload` – upload one or more images and record their metadata
+- `GET /api/images` – list images with filters (`tag`, `model`, `lora`, `width`, `height`, `offset`, `limit`)
+- `DELETE /api/images/:id` – remove a single image
+- `POST /api/images/delete` – bulk remove images via an `ids` array
+- `GET /api/tags` – return a tag frequency list for the tag cloud
 
 ### Project Structure
-- **src/server.js** – Express server with image upload and search API.
-- **public/** – Static frontend implementing a simple gallery.
+- **src/server.js** – main server implementation
+- **public/** – static files for the gallery and upload pages
 
-Upload images through `upload.html`, which offers a drag-and-drop zone for quick imports. The metadata found in PNG files under the `Parameters` field is parsed automatically.
+Upload images through `public/upload.html`. Hover an image in the gallery to preview its main tag or open the metadata drawer for complete details.
+
