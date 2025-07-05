@@ -1,0 +1,251 @@
+:root {
+  --bg-dark: #1f2937; /* charcoal */
+  --bg-light: #f4f5f6; /* slate white */
+  --accent-violet: #8a2be2; /* electric violet */
+  --accent-cobalt: #0047ab; /* cobalt */
+  --accent-teal: #008080; /* teal */
+  --text-color: #e5e7eb; /* light gray */
+}
+
+body {
+  margin: 0;
+  font-family: 'Inter', 'IBM Plex Sans', sans-serif;
+  background-color: var(--bg-dark);
+  color: var(--text-color);
+}
+
+nav.navbar {
+  border-bottom: 2px solid var(--accent-cobalt);
+}
+
+.text-violet {
+  color: var(--accent-violet) !important;
+}
+
+/* Eye-catching gradient logo */
+.logo-gradient {
+  font-weight: 700;
+  font-size: 1.75rem;
+  background: linear-gradient(45deg, var(--accent-violet), var(--accent-teal));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-shadow: 0 0 6px rgba(138, 43, 226, 0.6);
+}
+
+h1 {
+  margin: 0;
+  color: var(--accent-violet);
+}
+
+.controls {
+  margin-left: auto;
+  display: flex;
+  gap: 0.5rem;
+}
+
+@media (max-width: 600px) {
+  .controls {
+    width: 100%;
+    flex-direction: column;
+    margin-left: 0;
+  }
+  nav.navbar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+img {
+  width: 100%;
+  height: auto;
+  display: block;
+  border: 1px solid var(--accent-cobalt);
+}
+
+.info-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  color: var(--text-color);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 0.5rem;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.gallery-item:hover .info-overlay {
+  opacity: 1;
+}
+
+
+
+#sidebar {
+  width: 250px;
+  background: var(--bg-dark);
+  border-right: 2px solid var(--accent-cobalt);
+  padding: 1rem;
+  transition: transform 0.3s;
+  position: relative;
+  z-index: 2;
+}
+
+#sidebar.collapsed {
+  transform: translateX(-100%);
+  position: absolute;
+}
+
+#toggleSidebar {
+  background: none;
+  border: none;
+  color: var(--accent-teal);
+  font-size: 1.2rem;
+  cursor: pointer;
+  margin-bottom: 1rem;
+}
+
+#gallery {
+  column-width: 220px;
+  column-gap: 1rem;
+  padding: 1rem;
+  width: 100%;
+}
+
+.gallery-item {
+  break-inside: avoid;
+  margin-bottom: 1rem;
+  position: relative;
+}
+
+.meta-preview {
+  background: rgba(0, 0, 0, 0.7);
+  color: var(--text-color);
+  font-size: 0.75rem;
+  padding: 0.25rem;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+/* Offcanvas tweaks */
+#drawer {
+  border-left: 2px solid var(--accent-cobalt);
+}
+
+#drawerClose {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  background: none;
+  border: none;
+  color: var(--text-color);
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+
+.tag-switch {
+  display: block;
+  margin-top: 1rem;
+  font-size: 0.9rem;
+}
+
+.placeholder {
+  text-align: center;
+  font-style: italic;
+  color: var(--accent-teal);
+  width: 100%;
+}
+
+.delete-btn {
+  position: absolute;
+  top: 0.25rem;
+  right: 0.25rem;
+  background: none;
+  border: none;
+  color: var(--text-color);
+  cursor: pointer;
+  z-index: 1;
+}
+
+.select-box {
+  position: absolute;
+  top: 0.25rem;
+  left: 0.25rem;
+  z-index: 1;
+}
+
+.drop-zone {
+  border: 2px dashed var(--accent-teal);
+  padding: 0.5rem;
+  text-align: center;
+  cursor: pointer;
+  margin-right: 0.5rem;
+}
+
+.drop-zone.dragover {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.btn-outline-teal {
+  color: var(--accent-teal);
+  border-color: var(--accent-teal);
+}
+
+.btn-outline-teal:hover {
+  background-color: var(--accent-teal);
+  color: var(--bg-light);
+}
+
+.nav-link {
+  color: var(--accent-teal);
+  text-decoration: none;
+  padding: 0.25rem 0.5rem;
+  border: 1px solid var(--accent-teal);
+  border-radius: 4px;
+}
+
+.tag-cloud {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  max-width: 800px;
+  margin: 2rem auto;
+}
+
+.tag-item {
+  display: inline-block;
+  padding: 0.25rem 0.5rem;
+  background: var(--accent-cobalt);
+  color: var(--text-color);
+  border-radius: 4px;
+  cursor: pointer;
+  white-space: nowrap;
+  user-select: none;
+  transition: transform 0.2s;
+}
+
+.tag-item:hover {
+  transform: scale(1.1);
+}
+
+/* Upload page layout */
+.upload-page .upload-container {
+  max-width: 600px;
+  margin: 4rem auto;
+}
+
+.upload-page .upload-drop-zone {
+  padding: 3rem;
+  font-size: 1.25rem;
+  margin: 1rem 0;
+}
