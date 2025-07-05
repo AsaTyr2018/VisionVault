@@ -12,7 +12,7 @@ This repository contains the first gallery framework for VisionVault. Images can
 npm install
 npm start
 ```
-The server will start on [http://localhost:3000](http://localhost:3000).
+The server will start on [http://{serverip}:3000](http://{serverip}:3000).
 
 ### Automatic Updates
 To start the server with an update check, run:
