@@ -11,7 +11,7 @@ Running the script performs the following steps:
 
 1. Clone the VisionVault repository into `./app` if it is not already present.
 2. Create a `Dockerfile` and `docker-compose.yml` inside the cloned directory.
-3. Configure Docker volumes so the SQLite database and uploaded images remain outside the container for easy backup.
+3. Configure Docker volumes so the SQLite database and uploaded images remain outside the container for easy backup. The builder now creates a `data` directory containing the database file.
 
 ## Usage
 
@@ -25,6 +25,9 @@ By default the script uses the main VisionVault repository URL. After the files 
 cd app
 docker compose up -d
 ```
+
+The container uses `DB_PATH=/app/data/visionvault.db` so the SQLite database resides
+in the mounted `data` directory.
 
 The web interface will be available at `http://localhost:3000`.
 

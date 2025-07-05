@@ -56,9 +56,20 @@ services:
       - '3000:3000'
     volumes:
       - ./public/images:/app/public/images
-      - ./visionvault.db:/app/visionvault.db
+      - ./data:/app/data
+    environment:
+      - NODE_ENV=production
+      - DB_PATH=/app/data/visionvault.db
 """
     )
+
+    # Ensure host data directory and database file exist so Docker
+    # mounts a file instead of creating a directory
+    data_dir = path / "data"
+    data_dir.mkdir(exist_ok=True)
+    db_file = data_dir / "visionvault.db"
+    if not db_file.exists():
+        db_file.touch()
 
 
 def main(repo: str = DEFAULT_REPO):
