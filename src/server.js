@@ -7,8 +7,9 @@ const Database = require('better-sqlite3');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Database setup
-const db = new Database(path.join(__dirname, '..', 'visionvault.db'));
+// Database setup. Allow overriding the location for Docker or custom setups.
+const dbPath = process.env.DB_PATH || path.join(__dirname, '..', 'visionvault.db');
+const db = new Database(dbPath);
 db.prepare(`CREATE TABLE IF NOT EXISTS images (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   filename TEXT,
