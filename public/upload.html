@@ -1,30 +1,46 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>VisionVault - Upload</title>
+  <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
 </head>
-<body class="upload-page">
-  <nav class="navbar navbar-dark bg-dark border-bottom border-primary px-3">
-    <a class="navbar-brand logo-gradient" href="index.html">VisionVault</a>
-    <div class="ms-auto d-flex gap-2">
-      <a href="gallery.html" class="btn btn-secondary">Gallery</a>
-      <a href="tags.html" class="btn btn-secondary">Tag Cloud</a>
-      <button id="themeToggle" type="button" class="btn btn-outline-teal" title="Toggle theme">☀</button>
-    </div>
-  </nav>
-  <main class="upload-container container text-center">
-    <h1 class="my-4">Upload Images</h1>
-    <form id="uploadForm">
-      <div id="dropZone" class="drop-zone upload-drop-zone">Drag and drop images here or click</div>
-      <input type="file" id="imageInput" name="images" accept="image/png,image/jpeg" multiple style="display:none" />
-    </form>
-    <ul id="uploadQueue" class="list-group mt-3"></ul>
-    <div id="uploadStatus" class="mt-3"></div>
-  </main>
+<body class="bg-gray-900 text-white upload-page">
+  <header class="flex items-center justify-between px-4 py-3 bg-gray-800 shadow-md">
+    <h1 class="text-lg font-semibold"><a href="index.html">VisionVault</a></h1>
+    <nav class="space-x-2 flex items-center">
+      <a href="index.html" class="px-3 py-1 bg-gray-700 hover:bg-gray-600 rounded">Dashboard</a>
+      <a href="gallery.html" class="px-3 py-1 bg-gray-700 hover:bg-gray-600 rounded">Gallery</a>
+      <a href="tags.html" class="px-3 py-1 bg-gray-700 hover:bg-gray-600 rounded">Tag Cloud</a>
+      <a href="upload.html" class="px-3 py-1 bg-gray-700 hover:bg-gray-600 rounded">Upload</a>
+      <button id="themeToggle" type="button" class="px-3 py-1 bg-gray-700 hover:bg-gray-600 rounded" title="Toggle theme">☀</button>
+    </nav>
+  </header>
+  <div class="flex h-[calc(100vh-56px)]">
+    <aside class="w-64 bg-gray-800 border-r border-gray-700 p-6 overflow-y-auto">
+      <h2 class="text-md font-semibold mb-4">Navigation</h2>
+      <nav class="space-y-2 text-sm">
+        <a href="index.html" class="block px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded">Dashboard</a>
+        <a href="gallery.html" class="block px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded">Gallery</a>
+        <a href="tags.html" class="block px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded">Tag Cloud</a>
+        <a href="upload.html" class="block px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded">Upload</a>
+      </nav>
+    </aside>
+    <main class="flex-1 p-6 overflow-y-auto bg-gray-900">
+      <div class="upload-container container text-center">
+        <h1 class="my-4">Upload Images</h1>
+        <form id="uploadForm">
+          <div id="dropZone" class="drop-zone upload-drop-zone">Drag and drop images here or click</div>
+          <input type="file" id="imageInput" name="images" accept="image/png,image/jpeg" multiple style="display:none" />
+        </form>
+        <ul id="uploadQueue" class="list-group mt-3"></ul>
+        <div id="uploadStatus" class="mt-3"></div>
+      </div>
+    </main>
+  </div>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script src="upload.js"></script>
 </body>
