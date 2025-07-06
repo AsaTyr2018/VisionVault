@@ -13,6 +13,7 @@ const deleteSelectedBtn = document.getElementById('deleteSelected');
 const uploadForm = document.getElementById('uploadForm');
 const dropZone = document.getElementById('dropZone');
 const imageInput = document.getElementById('imageInput');
+const sortSelect = document.getElementById('sortSelect');
 
 // Simple helper so all debug output is grouped and easy to filter
 function debug(...args) {
@@ -26,7 +27,8 @@ let filters = {
   tag: '',
   model: '',
   lora: false,
-  resolution: ''
+  resolution: '',
+  sort: 'date_desc'
 };
 
 
@@ -36,6 +38,11 @@ const tagParam = urlParams.get('tag');
 if (tagParam) {
   filters.tag = tagParam;
   if (searchInput) searchInput.value = tagParam;
+}
+const sortParam = urlParams.get('sort');
+if (sortParam) {
+  filters.sort = sortParam;
+  if (sortSelect) sortSelect.value = sortParam;
 }
 
 function buildQuery() {
@@ -50,6 +57,7 @@ function buildQuery() {
       params.set('height', h.trim());
     }
   }
+  if (filters.sort) params.set('sort', filters.sort);
   params.set('offset', offset);
   params.set('limit', limit);
   return params.toString();
@@ -234,6 +242,13 @@ searchInput.addEventListener('input', () => {
   filters.tag = searchInput.value.trim();
   loadMore(true);
 });
+
+if (sortSelect) {
+  sortSelect.addEventListener('change', () => {
+    filters.sort = sortSelect.value;
+    loadMore(true);
+  });
+}
 
 manualTagToggle.addEventListener('change', () => {
   const showManual = manualTagToggle.checked;

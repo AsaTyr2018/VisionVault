@@ -148,7 +148,14 @@ app.post('/api/upload', upload.array('images'), (req, res) => {
 });
 
 app.get('/api/images', (req, res) => {
-  const { tag, model, offset = 0, limit = 50, lora } = req.query;
+  const {
+    tag,
+    model,
+    offset = 0,
+    limit = 50,
+    lora,
+    sort = 'date_desc'
+  } = req.query;
   const conditions = [];
   const params = [];
   if (tag) {
@@ -165,7 +172,14 @@ app.get('/api/images', (req, res) => {
   }
   let query = 'SELECT * FROM images';
   if (conditions.length) query += ' WHERE ' + conditions.join(' AND ');
-  query += ' ORDER BY id DESC LIMIT ? OFFSET ?';
+
+  let orderClause = 'ORDER BY created_at DESC';
+  if (sort === 'date_asc') orderClause = 'ORDER BY created_at ASC';
+  else if (sort === 'trigger_asc') {
+    orderClause =
+      "ORDER BY LOWER(CASE WHEN instr(tags, ',')>0 THEN substr(tags,1,instr(tags,',')-1) ELSE tags END) ASC";
+  }
+  query += ` ${orderClause} LIMIT ? OFFSET ?`;
   params.push(Number(limit));
   params.push(Number(offset));
   const rows = db.prepare(query).all(...params);

@@ -7,6 +7,7 @@ VisionVault is a lightweight image board tailored for AI-generated artwork. Uplo
 - Drag-and-drop bulk uploads with automatic extraction of PNG `Parameters` metadata
 - Images and metadata stored in a local SQLite database
 - Infinite scrolling gallery with quick tag preview
+- Sorting by date or first tag (trigger)
 - Filters for tags, model names, LoRA references and resolution
 - Tag cloud page showing popular keywords
 - Metadata drawer and fullscreen modal per image
