@@ -249,3 +249,11 @@ img {
   font-size: 1.25rem;
   margin: 1rem 0;
 }
+
+.upload-page #uploadQueue {
+  text-align: left;
+}
+
+.upload-page .progress {
+  height: 0.75rem;
+}
