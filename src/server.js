@@ -3,6 +3,7 @@ const path = require('path');
 const fs = require('fs');
 const multer = require('multer');
 const Database = require('better-sqlite3');
+const { execSync } = require('child_process');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -39,6 +40,24 @@ if (!cols.some((c) => c.name === 'created_at')) {
 // File upload configuration
 const uploadDir = path.join(__dirname, '..', 'public', 'images');
 fs.mkdirSync(uploadDir, { recursive: true });
+function getDirectorySize(dir) {
+  return fs.readdirSync(dir, { withFileTypes: true }).reduce((total, entry) => {
+    const p = path.join(dir, entry.name);
+    return total + (entry.isDirectory() ? getDirectorySize(p) : fs.statSync(p).size);
+  }, 0);
+}
+
+function getStorageStats() {
+  try {
+    const info = execSync(`df -kP "${uploadDir}"`).toString().split('\n')[1].trim().split(/\s+/);
+    const total = parseInt(info[1], 10) * 1024;
+    const used = parseInt(info[2], 10) * 1024;
+    return { total, used };
+  } catch {
+    const used = getDirectorySize(uploadDir);
+    return { total: used, used };
+  }
+}
 const storage = multer.diskStorage({
   destination: uploadDir,
   filename: (_req, file, cb) => {
@@ -240,9 +259,16 @@ app.get('/api/stats', (_req, res) => {
   const totalTags = Object.keys(tagCounts).length;
   const topTags = Object.entries(tagCounts)
     .sort((a, b) => b[1] - a[1])
-    .slice(0, 5)
+    .slice(0, 10)
     .map(([tag, count]) => ({ tag, count }));
-  res.json({ images: imgCount, tags: totalTags, models: models.size, topTags });
+  const storage = getStorageStats();
+  res.json({
+    images: imgCount,
+    tags: totalTags,
+    models: models.size,
+    topTags,
+    storage
+  });
 });
 
 // Remove a single image by id
