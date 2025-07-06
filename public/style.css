@@ -277,3 +277,9 @@ img {
 .upload-page .progress {
   height: 0.75rem;
 }
+
+.chart-canvas {
+  max-width: 100%;
+  height: 220px;
+  margin: 0 auto;
+}
