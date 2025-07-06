@@ -103,12 +103,12 @@
       document.getElementById('statImages').textContent = data.images;
       document.getElementById('statTags').textContent = data.tags;
       document.getElementById('statModels').textContent = data.models;
-      const mb = v => (v / (1024 * 1024)).toFixed(2);
-      document.getElementById('statStorage').textContent = `${mb(data.storage.used)} / ${mb(data.storage.total)} MB`;
+      const gb = v => (v / (1024 * 1024 * 1024)).toFixed(2);
+      document.getElementById('statStorage').textContent = `${gb(data.storage.used)} / ${gb(data.storage.total)} GB`;
       document.getElementById('statImagesText').textContent = `You have ${data.images} images`;
       document.getElementById('statTagsText').textContent = data.topTags.length ? `Top tag: ${data.topTags[0].tag}` : '';
       document.getElementById('statModelsText').textContent = `${data.models} models detected`;
-      document.getElementById('statStorageText').textContent = `Using ${mb(data.storage.used)} MB`;
+      document.getElementById('statStorageText').textContent = `Using ${gb(data.storage.used)} GB`;
 
       new Chart(document.getElementById('countChart').getContext('2d'), {
         type: 'bar',
@@ -127,7 +127,10 @@
         data: {
           labels: ['Used', 'Free'],
           datasets: [{
-            data: [data.storage.used, data.storage.total - data.storage.used],
+            data: [
+              gb(data.storage.used),
+              gb(data.storage.total - data.storage.used)
+            ],
             backgroundColor: ['#0047ab', '#8a2be2']
           }]
         },
