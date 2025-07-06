@@ -16,7 +16,7 @@ function render(tags) {
     const scale = t.count / max;
     span.style.fontSize = 0.8 + scale * 1.2 + 'rem';
     span.addEventListener('click', () => {
-      window.location.href = `index.html?tag=${encodeURIComponent(t.tag)}`;
+      window.location.href = `gallery.html?tag=${encodeURIComponent(t.tag)}`;
     });
     container.appendChild(span);
   });
