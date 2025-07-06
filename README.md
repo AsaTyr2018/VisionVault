@@ -65,7 +65,7 @@ The Express server exposes the following endpoints:
 
 ### Project Structure
 - **src/server.js** – main server implementation
-- **public/** – static files for the gallery and upload pages
+- **public/** – static files for the dashboard, gallery and upload pages
 
-Upload images through `public/upload.html`. Hover an image in the gallery to preview its main tag or open the metadata drawer for complete details.
+The default `index.html` now shows a dashboard with basic statistics. Browse images through `public/gallery.html`. Upload images via `public/upload.html`. Hover an image in the gallery to preview its main tag or open the metadata drawer for complete details.
 

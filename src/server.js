@@ -222,6 +222,29 @@ app.get('/api/tags', (_req, res) => {
   res.json(tags);
 });
 
+// Basic statistics for dashboard
+app.get('/api/stats', (_req, res) => {
+  const imgCount = db.prepare('SELECT COUNT(*) AS count FROM images').get().count;
+  const rows = db.prepare('SELECT tags, prompt, metadata FROM images').all();
+  const tagCounts = {};
+  const models = new Set();
+  rows.forEach((r) => {
+    const src = r.tags && r.tags.includes(',') ? r.tags : r.prompt || r.tags || '';
+    const list = toTags(src);
+    list.forEach((t) => {
+      if (t) tagCounts[t] = (tagCounts[t] || 0) + 1;
+    });
+    const meta = parseMetadata(r.metadata || '');
+    if (meta.model) models.add(meta.model);
+  });
+  const totalTags = Object.keys(tagCounts).length;
+  const topTags = Object.entries(tagCounts)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 5)
+    .map(([tag, count]) => ({ tag, count }));
+  res.json({ images: imgCount, tags: totalTags, models: models.size, topTags });
+});
+
 // Remove a single image by id
 app.delete('/api/images/:id', (req, res) => {
   const id = parseInt(req.params.id, 10);

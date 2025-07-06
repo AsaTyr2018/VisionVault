@@ -3,70 +3,83 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>VisionVault</title>
-  <link
-    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-    rel="stylesheet"
-  />
+  <title>VisionVault - Dashboard</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <nav class="navbar navbar-dark bg-dark border-bottom border-primary px-3">
     <a class="navbar-brand logo-gradient" href="index.html">VisionVault</a>
-    <div class="d-flex align-items-center flex-wrap ms-auto gap-2 controls">
-      <input type="text" id="search" class="form-control" placeholder="Search tags" />
-      <select id="sortSelect" class="form-select">
-        <option value="date_desc">Newest first</option>
-        <option value="date_asc">Oldest first</option>
-        <option value="trigger_asc">Trigger A-Z</option>
-      </select>
-      <button id="deleteSelected" type="button" class="btn btn-danger">Delete Selected</button>
+    <div class="ms-auto d-flex gap-2">
+      <a href="gallery.html" class="btn btn-secondary">Gallery</a>
       <a href="tags.html" class="btn btn-secondary">Tag Cloud</a>
       <a href="upload.html" class="btn btn-secondary">Upload</a>
       <button id="themeToggle" type="button" class="btn btn-outline-teal" title="Toggle theme">☀</button>
     </div>
   </nav>
-  <div id="main-container" class="container-fluid mt-3">
-    <div class="row">
-      <aside id="sidebar" class="col-md-3 col-lg-2 collapsed">
-        <button id="toggleSidebar" class="btn btn-outline-teal mb-2">☰</button>
-        <form id="filterForm" class="vstack gap-2">
-          <input type="text" id="modelFilter" class="form-control" placeholder="Model" />
-          <input type="text" id="keywordFilter" class="form-control" placeholder="Keyword" />
-          <input type="text" id="resFilter" class="form-control" placeholder="Resolution e.g. 512x512" />
-          <div class="form-check">
-            <input class="form-check-input" type="checkbox" id="loraFilter" />
-            <label class="form-check-label" for="loraFilter">LoRA</label>
+  <main class="container py-5">
+    <h1 class="mb-4">Dashboard</h1>
+    <div id="stats" class="row g-4">
+      <div class="col-md-4">
+        <div class="card text-center bg-dark">
+          <div class="card-body">
+            <h2 id="statImages" class="card-title display-5">0</h2>
+            <p class="card-text">Images</p>
           </div>
-          <button type="submit" class="btn btn-primary">Apply</button>
-        </form>
-        <label class="tag-switch mt-3"><input type="checkbox" id="manualTagToggle" /> Manual tags</label>
-      </aside>
-      <main id="gallery" class="masonry col">
-        <p class="placeholder">Galerie wird hier erscheinen...</p>
-      </main>
-    </div>
-  </div>
-  <div id="drawer" class="offcanvas offcanvas-end bg-dark text-light" tabindex="-1">
-    <div class="offcanvas-header">
-      <h5 class="offcanvas-title">Metadata</h5>
-      <button id="drawerClose" type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
-    </div>
-    <div id="drawerContent" class="offcanvas-body"></div>
-  </div>
-  <footer>
-    <!-- Placeholder for footer content -->
-  </footer>
-  <div class="modal fade" id="imageModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-lg">
-      <div class="modal-content bg-dark text-light">
-        <div class="modal-body p-0 text-center">
-          <img id="modalImage" src="" class="img-fluid" alt="" />
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card text-center bg-dark">
+          <div class="card-body">
+            <h2 id="statTags" class="card-title display-5">0</h2>
+            <p class="card-text">Unique Tags</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card text-center bg-dark">
+          <div class="card-body">
+            <h2 id="statModels" class="card-title display-5">0</h2>
+            <p class="card-text">Models Used</p>
+          </div>
         </div>
       </div>
     </div>
-  </div>
+    <h2 class="mt-5">Top Tags</h2>
+    <ul id="topTags" class="list-inline mt-3"></ul>
+  </main>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-  <script type="module" src="main.js"></script>
+  <script>
+    const themeToggle = document.getElementById('themeToggle');
+    function applyTheme(theme) {
+      if (theme === 'light') {
+        document.body.classList.add('light-theme');
+        themeToggle.textContent = '🌙';
+      } else {
+        document.body.classList.remove('light-theme');
+        themeToggle.textContent = '☀';
+      }
+      localStorage.setItem('vv-theme', theme);
+    }
+    themeToggle.addEventListener('click', () => {
+      const current = document.body.classList.contains('light-theme') ? 'light' : 'dark';
+      applyTheme(current === 'light' ? 'dark' : 'light');
+    });
+    applyTheme(localStorage.getItem('vv-theme') || 'dark');
+
+    fetch('/api/stats').then(r => r.json()).then(data => {
+      document.getElementById('statImages').textContent = data.images;
+      document.getElementById('statTags').textContent = data.tags;
+      document.getElementById('statModels').textContent = data.models;
+      const ul = document.getElementById('topTags');
+      ul.innerHTML = '';
+      data.topTags.forEach(t => {
+        const li = document.createElement('li');
+        li.className = 'list-inline-item badge bg-secondary m-1';
+        li.textContent = `${t.tag} (${t.count})`;
+        ul.appendChild(li);
+      });
+    });
+  </script>
 </body>
 </html>
