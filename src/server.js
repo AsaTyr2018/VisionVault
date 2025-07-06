@@ -131,6 +131,15 @@ function extractLoras(meta) {
   while ((m = plain.exec(meta))) {
     names.add(m[1].trim());
   }
+  const hashMatch = /Lora hashes?:\s*("([^"]+)"|[^\n]+)/i.exec(meta);
+  if (hashMatch) {
+    let list = hashMatch[2] || hashMatch[1];
+    list = list.replace(/^"|"$/g, '');
+    list.split(',').forEach((entry) => {
+      const [name] = entry.split(':');
+      if (name) names.add(name.trim());
+    });
+  }
   return Array.from(names);
 }
 
