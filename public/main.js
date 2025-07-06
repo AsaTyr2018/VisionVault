@@ -6,7 +6,6 @@ let bsDrawer;
 let modal;
 const sidebar = document.getElementById('sidebar');
 const toggleSidebarBtn = document.getElementById('toggleSidebar');
-const manualTagToggle = document.getElementById('manualTagToggle');
 const filterForm = document.getElementById('filterForm');
 const searchInput = document.getElementById('search');
 const deleteSelectedBtn = document.getElementById('deleteSelected');
@@ -15,6 +14,7 @@ const dropZone = document.getElementById('dropZone');
 const imageInput = document.getElementById('imageInput');
 const sortSelect = document.getElementById('sortSelect');
 const themeToggle = document.getElementById('themeToggle');
+const modelListEl = document.getElementById('modelList');
 
 // Simple helper so all debug output is grouped and easy to filter
 function debug(...args) {
@@ -44,6 +44,10 @@ const sortParam = urlParams.get('sort');
 if (sortParam) {
   filters.sort = sortParam;
   if (sortSelect) sortSelect.value = sortParam;
+}
+const modelParam = urlParams.get('model');
+if (modelParam) {
+  filters.model = modelParam;
 }
 
 function buildQuery() {
@@ -75,6 +79,40 @@ async function fetchImages() {
   } catch (err) {
     console.error('[VisionVault] Failed to fetch images', err);
     return [];
+  }
+}
+
+async function loadModels() {
+  if (!modelListEl) return;
+  try {
+    const res = await fetch('/api/models');
+    const models = await res.json();
+    modelListEl.innerHTML = '';
+    models.forEach((m) => {
+      const label = document.createElement('label');
+      label.className = 'block';
+      const cb = document.createElement('input');
+      cb.type = 'checkbox';
+      cb.className = 'mr-2 model-option';
+      cb.value = m;
+      if (m === filters.model) cb.checked = true;
+      cb.addEventListener('change', () => {
+        if (cb.checked) {
+          filters.model = cb.value;
+          document.querySelectorAll('.model-option').forEach((o) => {
+            if (o !== cb) o.checked = false;
+          });
+        } else {
+          filters.model = '';
+        }
+        loadMore(true);
+      });
+      label.appendChild(cb);
+      label.appendChild(document.createTextNode(m));
+      modelListEl.appendChild(label);
+    });
+  } catch (err) {
+    console.error('[VisionVault] Failed to load models', err);
   }
 }
 
@@ -232,7 +270,6 @@ toggleSidebarBtn.addEventListener('click', () => {
 
 filterForm.addEventListener('submit', (e) => {
   e.preventDefault();
-  filters.model = document.getElementById('modelFilter').value.trim();
   filters.tag = document.getElementById('keywordFilter').value.trim();
   filters.resolution = document.getElementById('resFilter').value.trim();
   filters.lora = document.getElementById('loraFilter').checked;
@@ -250,13 +287,6 @@ if (sortSelect) {
     loadMore(true);
   });
 }
-
-manualTagToggle.addEventListener('change', () => {
-  const showManual = manualTagToggle.checked;
-  document.querySelectorAll('.tag-auto').forEach((el) => {
-    el.style.display = showManual ? 'none' : '';
-  });
-});
 
 function applyTheme(theme) {
   if (theme === 'light') {
@@ -297,4 +327,4 @@ if (uploadForm && dropZone && imageInput) {
 }
 
 // initial load
-loadMore(true);
+loadModels().then(() => loadMore(true));
