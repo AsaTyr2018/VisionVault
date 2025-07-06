@@ -77,6 +77,10 @@
         </div>
         <h2 class="mt-5">Top Tags</h2>
         <ul id="topTags" class="list-inline mt-3"></ul>
+        <h2 class="mt-5">Top Triggers</h2>
+        <ul id="topTriggers" class="list-inline mt-3"></ul>
+        <h2 class="mt-5">Used LoRAs</h2>
+        <ul id="usedLoras" class="list-inline mt-3"></ul>
       </div>
     </main>
   </div>
@@ -148,6 +152,32 @@
         a.href = `gallery.html?tag=${encodeURIComponent(t.tag)}`;
         li.appendChild(a);
         ul.appendChild(li);
+      });
+
+      const trg = document.getElementById('topTriggers');
+      trg.innerHTML = '';
+      data.topTriggers.forEach(t => {
+        const li = document.createElement('li');
+        li.className = 'list-inline-item m-1';
+        const a = document.createElement('a');
+        a.className = 'badge bg-secondary';
+        a.textContent = `${t.tag} (${t.count})`;
+        a.href = `gallery.html?tag=${encodeURIComponent(t.tag)}`;
+        li.appendChild(a);
+        trg.appendChild(li);
+      });
+
+      const ll = document.getElementById('usedLoras');
+      ll.innerHTML = '';
+      data.loras.forEach(l => {
+        const li = document.createElement('li');
+        li.className = 'list-inline-item m-1';
+        const a = document.createElement('a');
+        a.className = 'badge bg-secondary';
+        a.textContent = l;
+        a.href = `gallery.html?loraName=${encodeURIComponent(l)}`;
+        li.appendChild(a);
+        ll.appendChild(li);
       });
     });
   </script>

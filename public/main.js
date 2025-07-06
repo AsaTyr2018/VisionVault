@@ -15,6 +15,7 @@ const imageInput = document.getElementById('imageInput');
 const sortSelect = document.getElementById('sortSelect');
 const themeToggle = document.getElementById('themeToggle');
 const modelListEl = document.getElementById('modelList');
+const loraListEl = document.getElementById('loraList');
 
 // Simple helper so all debug output is grouped and easy to filter
 function debug(...args) {
@@ -28,6 +29,7 @@ let filters = {
   tag: '',
   model: '',
   lora: false,
+  loraName: '',
   resolution: '',
   sort: 'date_desc'
 };
@@ -49,12 +51,17 @@ const modelParam = urlParams.get('model');
 if (modelParam) {
   filters.model = modelParam;
 }
+const loraParam = urlParams.get('loraName');
+if (loraParam) {
+  filters.loraName = loraParam;
+}
 
 function buildQuery() {
   const params = new URLSearchParams();
   if (filters.tag) params.set('tag', filters.tag);
   if (filters.model) params.set('model', filters.model);
   if (filters.lora) params.set('lora', 'true');
+  if (filters.loraName) params.set('loraName', filters.loraName);
   if (filters.resolution) {
     const [w, h] = filters.resolution.split('x');
     if (w && h) {
@@ -113,6 +120,40 @@ async function loadModels() {
     });
   } catch (err) {
     console.error('[VisionVault] Failed to load models', err);
+  }
+}
+
+async function loadLoras() {
+  if (!loraListEl) return;
+  try {
+    const res = await fetch('/api/loras');
+    const loras = await res.json();
+    loraListEl.innerHTML = '';
+    loras.forEach((m) => {
+      const label = document.createElement('label');
+      label.className = 'block';
+      const cb = document.createElement('input');
+      cb.type = 'checkbox';
+      cb.className = 'mr-2 lora-option';
+      cb.value = m;
+      if (m === filters.loraName) cb.checked = true;
+      cb.addEventListener('change', () => {
+        if (cb.checked) {
+          filters.loraName = cb.value;
+          document.querySelectorAll('.lora-option').forEach((o) => {
+            if (o !== cb) o.checked = false;
+          });
+        } else {
+          filters.loraName = '';
+        }
+        loadMore(true);
+      });
+      label.appendChild(cb);
+      label.appendChild(document.createTextNode(m));
+      loraListEl.appendChild(label);
+    });
+  } catch (err) {
+    console.error('[VisionVault] Failed to load loras', err);
   }
 }
 
@@ -246,6 +287,7 @@ function openDrawer(img) {
     <p><strong>Model:</strong> ${img.model || ''}</p>
     <p><strong>Seed:</strong> ${img.seed || ''}</p>
     <p><strong>Size:</strong> ${img.width || '?'}x${img.height || '?'}</p>
+    ${img.loras && img.loras.length ? `<p><strong>LoRA:</strong> ${img.loras.join(', ')}</p>` : ''}
   `;
   debug('Opening metadata drawer for image', img.id);
   if (!bsDrawer) bsDrawer = new bootstrap.Offcanvas(drawer);
@@ -273,6 +315,8 @@ filterForm.addEventListener('submit', (e) => {
   filters.tag = document.getElementById('keywordFilter').value.trim();
   filters.resolution = document.getElementById('resFilter').value.trim();
   filters.lora = document.getElementById('loraFilter').checked;
+  const checkedLora = document.querySelector('.lora-option:checked');
+  filters.loraName = checkedLora ? checkedLora.value : '';
   loadMore(true);
 });
 
@@ -327,4 +371,4 @@ if (uploadForm && dropZone && imageInput) {
 }
 
 // initial load
-loadModels().then(() => loadMore(true));
+loadModels().then(loadLoras).then(() => loadMore(true));

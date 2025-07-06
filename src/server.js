@@ -120,6 +120,20 @@ function toTags(prompt) {
     .filter((t) => t && t !== 'raw');
 }
 
+function extractLoras(meta) {
+  const names = new Set();
+  const angle = /<lora:([^:>]+)(?::[\d.]+)?>/gi;
+  let m;
+  while ((m = angle.exec(meta))) {
+    names.add(m[1]);
+  }
+  const plain = /\b[Ll]ora:([^,\n]+)(?::[\d.]+)?/g;
+  while ((m = plain.exec(meta))) {
+    names.add(m[1].trim());
+  }
+  return Array.from(names);
+}
+
 function parseMetadata(meta) {
   const m = {
     model: /Model:(.*?)(?:,|$)/i,
@@ -146,6 +160,7 @@ function parseMetadata(meta) {
   if (prompt) res.prompt = prompt[1].trim();
   res.hasLora = /lora/i.test(meta);
   res.hasControl = /controlnet/i.test(meta);
+  res.loras = extractLoras(meta);
   return res;
 }
 
@@ -173,6 +188,7 @@ app.get('/api/images', (req, res) => {
     offset = 0,
     limit = 50,
     lora,
+    loraName,
     sort = 'date_desc'
   } = req.query;
   const conditions = [];
@@ -188,6 +204,10 @@ app.get('/api/images', (req, res) => {
   if (lora === 'true') {
     conditions.push('metadata LIKE ?');
     params.push('%lora%');
+  }
+  if (loraName) {
+    conditions.push('metadata LIKE ?');
+    params.push(`%${loraName}%`);
   }
   let query = 'SELECT * FROM images';
   if (conditions.length) query += ' WHERE ' + conditions.join(' AND ');
@@ -218,6 +238,7 @@ app.get('/api/images', (req, res) => {
       width: meta.width,
       height: meta.height,
       hasLora: meta.hasLora,
+      loras: meta.loras
     };
   });
   res.json(images);
@@ -252,32 +273,56 @@ app.get('/api/models', (_req, res) => {
   res.json(Array.from(models).sort());
 });
 
+// List unique LoRAs for filter UI
+app.get('/api/loras', (_req, res) => {
+  const rows = db.prepare('SELECT metadata FROM images').all();
+  const loras = new Set();
+  rows.forEach((r) => {
+    const meta = parseMetadata(r.metadata || '');
+    if (meta.loras) meta.loras.forEach((l) => loras.add(l));
+  });
+  res.json(Array.from(loras).sort());
+});
+
 // Basic statistics for dashboard
 app.get('/api/stats', (_req, res) => {
   const imgCount = db.prepare('SELECT COUNT(*) AS count FROM images').get().count;
   const rows = db.prepare('SELECT tags, prompt, metadata FROM images').all();
   const tagCounts = {};
+  const triggerCounts = {};
   const models = new Set();
+  const loras = new Set();
   rows.forEach((r) => {
     const src = r.tags && r.tags.includes(',') ? r.tags : r.prompt || r.tags || '';
     const list = toTags(src);
-    list.forEach((t) => {
-      if (t) tagCounts[t] = (tagCounts[t] || 0) + 1;
+    list.forEach((t, i) => {
+      if (t) {
+        tagCounts[t] = (tagCounts[t] || 0) + 1;
+        if (i === 0) triggerCounts[t] = (triggerCounts[t] || 0) + 1;
+      }
     });
     const meta = parseMetadata(r.metadata || '');
     if (meta.model) models.add(meta.model);
+    if (meta.loras) meta.loras.forEach((l) => loras.add(l));
   });
   const totalTags = Object.keys(tagCounts).length;
   const topTags = Object.entries(tagCounts)
     .sort((a, b) => b[1] - a[1])
     .slice(0, 10)
     .map(([tag, count]) => ({ tag, count }));
+  const topTriggers = Object.entries(triggerCounts)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 10)
+    .map(([tag, count]) => ({ tag, count }));
+  const loraList = Array.from(loras).sort();
   const storage = getStorageStats();
   res.json({
     images: imgCount,
     tags: totalTags,
     models: models.size,
     topTags,
+    topTriggers,
+    loras: loraList,
     storage
   });
 });
