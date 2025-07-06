@@ -15,6 +15,11 @@
     <a class="navbar-brand logo-gradient" href="index.html">VisionVault</a>
     <div class="d-flex align-items-center flex-wrap ms-auto gap-2 controls">
       <input type="text" id="search" class="form-control" placeholder="Search tags" />
+      <select id="sortSelect" class="form-select">
+        <option value="date_desc">Newest first</option>
+        <option value="date_asc">Oldest first</option>
+        <option value="trigger_asc">Trigger A-Z</option>
+      </select>
       <button id="deleteSelected" type="button" class="btn btn-danger">Delete Selected</button>
       <a href="tags.html" class="btn btn-secondary">Tag Cloud</a>
       <a href="upload.html" class="btn btn-secondary">Upload</a>
