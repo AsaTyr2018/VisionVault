@@ -39,6 +39,7 @@
               <div class="card-body">
                 <h2 id="statImages" class="card-title display-5">0</h2>
                 <p class="card-text">Images</p>
+                <p id="statImagesText" class="card-text small text-muted"></p>
               </div>
             </div>
           </div>
@@ -47,6 +48,7 @@
               <div class="card-body">
                 <h2 id="statTags" class="card-title display-5">0</h2>
                 <p class="card-text">Unique Tags</p>
+                <p id="statTagsText" class="card-text small text-muted"></p>
               </div>
             </div>
           </div>
@@ -55,6 +57,7 @@
               <div class="card-body">
                 <h2 id="statModels" class="card-title display-5">0</h2>
                 <p class="card-text">Models Used</p>
+                <p id="statModelsText" class="card-text small text-muted"></p>
               </div>
             </div>
           </div>
@@ -63,12 +66,15 @@
               <div class="card-body">
                 <h2 id="statStorage" class="card-title h3">0</h2>
                 <p class="card-text">Storage Used</p>
+                <p id="statStorageText" class="card-text small text-muted"></p>
               </div>
             </div>
           </div>
         </div>
-        <canvas id="countChart" class="my-4"></canvas>
-        <canvas id="storageChart" class="my-4"></canvas>
+        <div class="row g-4 my-4">
+          <div class="col-md-6"><canvas id="countChart" class="chart-canvas"></canvas></div>
+          <div class="col-md-6"><canvas id="storageChart" class="chart-canvas"></canvas></div>
+        </div>
         <h2 class="mt-5">Top Tags</h2>
         <ul id="topTags" class="list-inline mt-3"></ul>
       </div>
@@ -99,6 +105,10 @@
       document.getElementById('statModels').textContent = data.models;
       const mb = v => (v / (1024 * 1024)).toFixed(2);
       document.getElementById('statStorage').textContent = `${mb(data.storage.used)} / ${mb(data.storage.total)} MB`;
+      document.getElementById('statImagesText').textContent = `You have ${data.images} images`;
+      document.getElementById('statTagsText').textContent = data.topTags.length ? `Top tag: ${data.topTags[0].tag}` : '';
+      document.getElementById('statModelsText').textContent = `${data.models} models detected`;
+      document.getElementById('statStorageText').textContent = `Using ${mb(data.storage.used)} MB`;
 
       new Chart(document.getElementById('countChart').getContext('2d'), {
         type: 'bar',
