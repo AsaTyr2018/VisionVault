@@ -182,6 +182,8 @@ function createItem(img) {
   });
 
   const el = document.createElement('img');
+  // Use native lazy loading so off-screen images don't load immediately
+  el.loading = 'lazy';
   el.src = img.url;
   el.alt = img.prompt || '';
   el.addEventListener('load', () => {
