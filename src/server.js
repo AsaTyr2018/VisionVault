@@ -241,6 +241,17 @@ app.get('/api/tags', (_req, res) => {
   res.json(tags);
 });
 
+// List unique models for filter UI
+app.get('/api/models', (_req, res) => {
+  const rows = db.prepare('SELECT metadata FROM images').all();
+  const models = new Set();
+  rows.forEach((r) => {
+    const meta = parseMetadata(r.metadata || '');
+    if (meta.model) models.add(meta.model);
+  });
+  res.json(Array.from(models).sort());
+});
+
 // Basic statistics for dashboard
 app.get('/api/stats', (_req, res) => {
   const imgCount = db.prepare('SELECT COUNT(*) AS count FROM images').get().count;
