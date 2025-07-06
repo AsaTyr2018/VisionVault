@@ -28,7 +28,6 @@ let loading = false;
 let filters = {
   tag: '',
   model: '',
-  lora: false,
   loraName: '',
   resolution: '',
   sort: 'date_desc'
@@ -60,7 +59,6 @@ function buildQuery() {
   const params = new URLSearchParams();
   if (filters.tag) params.set('tag', filters.tag);
   if (filters.model) params.set('model', filters.model);
-  if (filters.lora) params.set('lora', 'true');
   if (filters.loraName) params.set('loraName', filters.loraName);
   if (filters.resolution) {
     const [w, h] = filters.resolution.split('x');
@@ -314,7 +312,6 @@ filterForm.addEventListener('submit', (e) => {
   e.preventDefault();
   filters.tag = document.getElementById('keywordFilter').value.trim();
   filters.resolution = document.getElementById('resFilter').value.trim();
-  filters.lora = document.getElementById('loraFilter').checked;
   const checkedLora = document.querySelector('.lora-option:checked');
   filters.loraName = checkedLora ? checkedLora.value : '';
   loadMore(true);
