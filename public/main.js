@@ -14,6 +14,7 @@ const uploadForm = document.getElementById('uploadForm');
 const dropZone = document.getElementById('dropZone');
 const imageInput = document.getElementById('imageInput');
 const sortSelect = document.getElementById('sortSelect');
+const themeToggle = document.getElementById('themeToggle');
 
 // Simple helper so all debug output is grouped and easy to filter
 function debug(...args) {
@@ -256,6 +257,26 @@ manualTagToggle.addEventListener('change', () => {
     el.style.display = showManual ? 'none' : '';
   });
 });
+
+function applyTheme(theme) {
+  if (theme === 'light') {
+    document.body.classList.add('light-theme');
+    themeToggle.textContent = '🌙';
+  } else {
+    document.body.classList.remove('light-theme');
+    themeToggle.textContent = '☀';
+  }
+  localStorage.setItem('vv-theme', theme);
+}
+
+themeToggle.addEventListener('click', () => {
+  const current = document.body.classList.contains('light-theme') ? 'light' : 'dark';
+  const next = current === 'light' ? 'dark' : 'light';
+  applyTheme(next);
+});
+
+// Apply stored theme on load
+applyTheme(localStorage.getItem('vv-theme') || 'dark');
 
 deleteSelectedBtn.addEventListener('click', deleteSelected);
 

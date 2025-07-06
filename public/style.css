@@ -12,10 +12,20 @@ body {
   font-family: 'Inter', 'IBM Plex Sans', sans-serif;
   background-color: var(--bg-dark);
   color: var(--text-color);
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.light-theme {
+  --bg-dark: var(--bg-light);
+  --text-color: #1f2937;
 }
 
 nav.navbar {
   border-bottom: 2px solid var(--accent-cobalt);
+}
+
+.light-theme nav.navbar {
+  background-color: var(--bg-light) !important;
 }
 
 .text-violet {
@@ -61,6 +71,8 @@ img {
   height: auto;
   display: block;
   border: 1px solid var(--accent-cobalt);
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
 }
 
 .info-overlay {
@@ -92,6 +104,10 @@ img {
   transition: transform 0.3s;
   position: relative;
   z-index: 2;
+}
+
+.light-theme #sidebar {
+  background: var(--bg-light);
 }
 
 #sidebar.collapsed {
@@ -133,6 +149,10 @@ img {
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
+}
+
+.light-theme .meta-preview {
+  background: rgba(255, 255, 255, 0.7);
 }
 
 /* Offcanvas tweaks */
