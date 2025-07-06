@@ -117,7 +117,7 @@ function toTags(prompt) {
         .replace(/^"|"$/g, '')
         .toLowerCase()
     )
-    .filter((t) => t);
+    .filter((t) => t && t !== 'raw');
 }
 
 function parseMetadata(meta) {

@@ -9,7 +9,7 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <header class="flex items-center justify-between px-4 py-3 bg-gray-800 shadow-md">
+  <header class="flex items-center justify-between px-4 py-3 shadow-md">
     <h1 class="text-lg font-semibold"><a href="index.html">VisionVault</a></h1>
     <nav class="space-x-2 flex items-center">
       <a href="index.html" class="px-3 py-1 bg-gray-700 hover:bg-gray-600 rounded">Dashboard</a>
@@ -22,7 +22,7 @@
     </nav>
   </header>
   <div class="flex h-[calc(100vh-56px)]">
-    <aside id="sidebar" class="w-64 bg-gray-800 border-r border-gray-700 p-6 overflow-y-auto">
+    <aside id="sidebar" class="w-64 border-r border-gray-700 p-6 overflow-y-auto">
       <h2 class="text-md font-semibold mb-4">Filter</h2>
       <form id="filterForm" class="space-y-4 text-sm">
         <input type="text" id="modelFilter" class="w-full px-2 py-1 rounded bg-gray-700 placeholder-gray-400" placeholder="Model" />
@@ -38,7 +38,7 @@
       </form>
       <label class="tag-switch mt-3 block text-sm"><input type="checkbox" id="manualTagToggle" class="mr-2" /> Manual tags</label>
     </aside>
-    <main id="gallery" class="flex-1 p-6 overflow-y-auto bg-gray-900">
+    <main id="gallery" class="flex-1 p-6 overflow-y-auto">
       <p class="placeholder text-center text-teal-400">Galerie wird hier erscheinen...</p>
     </main>
   </div>
