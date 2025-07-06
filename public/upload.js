@@ -3,6 +3,7 @@ const dropZone = document.getElementById('dropZone');
 const imageInput = document.getElementById('imageInput');
 const statusEl = document.getElementById('uploadStatus');
 const queueEl = document.getElementById('uploadQueue');
+const themeToggle = document.getElementById('themeToggle');
 
 const queue = [];
 let uploading = false;
@@ -72,3 +73,22 @@ dropZone.addEventListener('drop', (e) => {
 imageInput.addEventListener('change', () => addFiles(imageInput.files));
 
 uploadForm.addEventListener('submit', (e) => e.preventDefault());
+
+function applyTheme(theme) {
+  if (theme === 'light') {
+    document.body.classList.add('light-theme');
+    themeToggle.textContent = '🌙';
+  } else {
+    document.body.classList.remove('light-theme');
+    themeToggle.textContent = '☀';
+  }
+  localStorage.setItem('vv-theme', theme);
+}
+
+themeToggle.addEventListener('click', () => {
+  const current = document.body.classList.contains('light-theme') ? 'light' : 'dark';
+  const next = current === 'light' ? 'dark' : 'light';
+  applyTheme(next);
+});
+
+applyTheme(localStorage.getItem('vv-theme') || 'dark');

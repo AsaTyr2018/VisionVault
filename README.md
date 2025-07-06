@@ -12,6 +12,7 @@ VisionVault is a lightweight image board tailored for AI-generated artwork. Uplo
 - Tag cloud page showing popular keywords
 - Metadata drawer and fullscreen modal per image
 - Single or bulk deletion of images
+- Light/dark theme toggle for improved usability
 - Optional `prestart.sh` script to pull updates and reinstall dependencies
 
 ## Use Cases
