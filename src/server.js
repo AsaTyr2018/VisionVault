@@ -37,9 +37,19 @@ if (!cols.some((c) => c.name === 'created_at')) {
   ).run();
 }
 
+// Table for uploaded LoRA files
+db.prepare(`CREATE TABLE IF NOT EXISTS loras (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT,
+  filename TEXT,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+)`).run();
+
 // File upload configuration
 const uploadDir = path.join(__dirname, '..', 'public', 'images');
+const loraDir = path.join(__dirname, '..', 'public', 'loras');
 fs.mkdirSync(uploadDir, { recursive: true });
+fs.mkdirSync(loraDir, { recursive: true });
 function getDirectorySize(dir) {
   return fs.readdirSync(dir, { withFileTypes: true }).reduce((total, entry) => {
     const p = path.join(dir, entry.name);
@@ -71,6 +81,15 @@ const storage = multer.diskStorage({
   }
 });
 const upload = multer({ storage });
+const loraStorage = multer.diskStorage({
+  destination: loraDir,
+  filename: (_req, file, cb) => {
+    let ext = path.extname(file.originalname) || '.safetensors';
+    const name = `${Date.now()}-${Math.round(Math.random() * 1e6)}${ext}`;
+    cb(null, name);
+  }
+});
+const loraUpload = multer({ storage: loraStorage });
 
 app.use(express.json());
 app.use(express.static(path.join(__dirname, '..', 'public')));
@@ -190,6 +209,17 @@ app.post('/api/upload', upload.array('images'), (req, res) => {
   res.json({ success: true, count: files.length });
 });
 
+// Upload LoRA safetensors
+app.post('/api/loras/upload', loraUpload.single('lora'), (req, res) => {
+  const file = req.file;
+  if (!file) return res.status(400).json({ error: 'No file uploaded' });
+  const name = path.basename(file.originalname, path.extname(file.originalname));
+  db.prepare(
+    'INSERT INTO loras (name, filename, created_at) VALUES (?, ?, datetime(\'now\'))'
+  ).run(name, file.filename);
+  res.json({ success: true });
+});
+
 app.get('/api/images', (req, res) => {
   const {
     tag,
@@ -293,6 +323,30 @@ app.get('/api/loras', (_req, res) => {
   res.json(Array.from(loras).sort());
 });
 
+// List uploaded LoRA files with usage count
+app.get('/api/lorafiles', (_req, res) => {
+  const rows = db
+    .prepare(
+      `SELECT l.id, l.name, l.filename, l.created_at,
+        COUNT(i.id) AS uses
+       FROM loras l
+       LEFT JOIN images i ON i.metadata LIKE '%' || l.name || '%'
+       GROUP BY l.id
+       ORDER BY l.created_at DESC`
+    )
+    .all();
+  res.json(rows);
+});
+
+// Download a LoRA file by id
+app.get('/loras/:id', (req, res) => {
+  const id = parseInt(req.params.id, 10);
+  const row = db.prepare('SELECT * FROM loras WHERE id = ?').get(id);
+  if (!row) return res.status(404).send('Not found');
+  const filePath = path.join(loraDir, row.filename);
+  res.download(filePath, row.name + path.extname(row.filename));
+});
+
 // Basic statistics for dashboard
 app.get('/api/stats', (_req, res) => {
   const imgCount = db.prepare('SELECT COUNT(*) AS count FROM images').get().count;
@@ -324,6 +378,7 @@ app.get('/api/stats', (_req, res) => {
     .slice(0, 10)
     .map(([tag, count]) => ({ tag, count }));
   const loraList = Array.from(loras).sort();
+  const loraFiles = db.prepare('SELECT COUNT(*) AS count FROM loras').get().count;
   const storage = getStorageStats();
   res.json({
     images: imgCount,
@@ -332,6 +387,7 @@ app.get('/api/stats', (_req, res) => {
     topTags,
     topTriggers,
     loras: loraList,
+    loraFiles,
     storage
   });
 });

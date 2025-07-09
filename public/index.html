@@ -16,6 +16,7 @@
       <a href="index.html" class="px-3 py-1 bg-gray-700 hover:bg-gray-600 rounded">Dashboard</a>
       <a href="gallery.html" class="px-3 py-1 bg-gray-700 hover:bg-gray-600 rounded">Gallery</a>
       <a href="tags.html" class="px-3 py-1 bg-gray-700 hover:bg-gray-600 rounded">Tag Cloud</a>
+      <a href="lorastore.html" class="px-3 py-1 bg-gray-700 hover:bg-gray-600 rounded">LoRA Store</a>
       <a href="upload.html" class="px-3 py-1 bg-gray-700 hover:bg-gray-600 rounded">Upload</a>
       <button id="themeToggle" type="button" class="px-3 py-1 bg-gray-700 hover:bg-gray-600 rounded" title="Toggle theme">☀</button>
     </nav>
@@ -27,6 +28,7 @@
         <a href="index.html" class="block px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded">Dashboard</a>
         <a href="gallery.html" class="block px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded">Gallery</a>
         <a href="tags.html" class="block px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded">Tag Cloud</a>
+        <a href="lorastore.html" class="block px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded">LoRA Store</a>
         <a href="upload.html" class="block px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded">Upload</a>
       </nav>
     </aside>
@@ -58,6 +60,15 @@
                 <h2 id="statModels" class="card-title display-5">0</h2>
                 <p class="card-text">Models Used</p>
                 <p id="statModelsText" class="card-text small text-light"></p>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="card text-center bg-dark text-white">
+              <div class="card-body">
+                <h2 id="statLoraFiles" class="card-title display-5">0</h2>
+                <p class="card-text">LoRA Files</p>
+                <p id="statLoraFilesText" class="card-text small text-light"></p>
               </div>
             </div>
           </div>
@@ -107,11 +118,13 @@
       document.getElementById('statImages').textContent = data.images;
       document.getElementById('statTags').textContent = data.tags;
       document.getElementById('statModels').textContent = data.models;
+      document.getElementById('statLoraFiles').textContent = data.loraFiles;
       const gb = v => (v / (1024 * 1024 * 1024)).toFixed(2);
       document.getElementById('statStorage').textContent = `${gb(data.storage.used)} / ${gb(data.storage.total)} GB`;
       document.getElementById('statImagesText').textContent = `You have ${data.images} images`;
       document.getElementById('statTagsText').textContent = data.topTags.length ? `Top tag: ${data.topTags[0].tag}` : '';
       document.getElementById('statModelsText').textContent = `${data.models} models detected`;
+      document.getElementById('statLoraFilesText').textContent = `${data.loraFiles} stored LoRAs`;
       document.getElementById('statStorageText').textContent = `Using ${gb(data.storage.used)} GB`;
 
       new Chart(document.getElementById('countChart').getContext('2d'), {
