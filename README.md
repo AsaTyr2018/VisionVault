@@ -70,3 +70,13 @@ The Express server exposes the following endpoints:
 
 The default `index.html` now shows a dashboard with basic statistics. Browse images through `public/gallery.html`. Upload images via `public/upload.html`. Hover an image in the gallery to preview its main tag or open the metadata drawer for complete details.
 
+### Refreshing Metadata
+
+If you add or modify image files outside of the web interface, run:
+
+```bash
+npm run refresh-meta
+```
+
+This command scans the `public/images` folder and updates the SQLite database, inserting any new files and filling in missing metadata for existing records.
+

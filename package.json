@@ -4,7 +4,8 @@
   "description": "Skeleton web server for VisionVault",
   "main": "src/server.js",
   "scripts": {
-    "start": "node src/server.js"
+    "start": "node src/server.js",
+    "refresh-meta": "node tools/refreshMetadata.js"
   },
   "dependencies": {
     "better-sqlite3": "^12.2.0",
