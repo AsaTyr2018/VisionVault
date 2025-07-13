@@ -138,6 +138,13 @@ img {
   border-radius: 4px;
   background: rgba(0, 0, 0, 0.2);
 }
+.filter-box summary {
+  cursor: pointer;
+  list-style: none;
+}
+.filter-box summary::-webkit-details-marker {
+  display: none;
+}
 
 .light-theme .filter-box {
   background: rgba(255, 255, 255, 0.6);

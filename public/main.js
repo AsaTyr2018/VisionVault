@@ -16,6 +16,8 @@ const sortSelect = document.getElementById('sortSelect');
 const themeToggle = document.getElementById('themeToggle');
 const modelListEl = document.getElementById('modelList');
 const loraListEl = document.getElementById('loraList');
+const yearSelect = document.getElementById('yearFilter');
+const monthSelect = document.getElementById('monthFilter');
 
 // Simple helper so all debug output is grouped and easy to filter
 function debug(...args) {
@@ -30,6 +32,8 @@ let filters = {
   model: '',
   loraName: '',
   resolution: '',
+  year: '',
+  month: '',
   sort: 'date_desc'
 };
 
@@ -54,6 +58,16 @@ const loraParam = urlParams.get('loraName');
 if (loraParam) {
   filters.loraName = loraParam;
 }
+const yearParam = urlParams.get('year');
+if (yearParam) {
+  filters.year = yearParam;
+  if (yearSelect) yearSelect.value = yearParam;
+}
+const monthParam = urlParams.get('month');
+if (monthParam) {
+  filters.month = monthParam;
+  if (monthSelect) monthSelect.value = monthParam;
+}
 
 function buildQuery() {
   const params = new URLSearchParams();
@@ -67,6 +81,8 @@ function buildQuery() {
       params.set('height', h.trim());
     }
   }
+  if (filters.year) params.set('year', filters.year);
+  if (filters.month) params.set('month', filters.month);
   if (filters.sort) params.set('sort', filters.sort);
   params.set('offset', offset);
   params.set('limit', limit);
@@ -152,6 +168,56 @@ async function loadLoras() {
     });
   } catch (err) {
     console.error('[VisionVault] Failed to load loras', err);
+  }
+}
+
+async function loadResolutions() {
+  const sel = document.getElementById('resFilter');
+  if (!sel) return;
+  try {
+    const res = await fetch('/api/resolutions');
+    const list = await res.json();
+    sel.innerHTML = '<option value="">Resolution</option>';
+    list.forEach((r) => {
+      const opt = document.createElement('option');
+      opt.value = r;
+      opt.textContent = r;
+      if (r === filters.resolution) opt.selected = true;
+      sel.appendChild(opt);
+    });
+  } catch (err) {
+    console.error('[VisionVault] Failed to load resolutions', err);
+  }
+}
+
+async function loadYears() {
+  if (!yearSelect) return;
+  try {
+    const res = await fetch('/api/years');
+    const years = await res.json();
+    yearSelect.innerHTML = '<option value="">Year</option>';
+    years.forEach((y) => {
+      const opt = document.createElement('option');
+      opt.value = y;
+      opt.textContent = y;
+      if (y === filters.year) opt.selected = true;
+      yearSelect.appendChild(opt);
+    });
+  } catch (err) {
+    console.error('[VisionVault] Failed to load years', err);
+  }
+  if (monthSelect) {
+    const months = [
+      '01','02','03','04','05','06','07','08','09','10','11','12'
+    ];
+    monthSelect.innerHTML = '<option value="">Month</option>';
+    months.forEach((m, i) => {
+      const opt = document.createElement('option');
+      opt.value = m;
+      opt.textContent = m;
+      if (m === filters.month) opt.selected = true;
+      monthSelect.appendChild(opt);
+    });
   }
 }
 
@@ -313,7 +379,9 @@ toggleSidebarBtn.addEventListener('click', () => {
 filterForm.addEventListener('submit', (e) => {
   e.preventDefault();
   filters.tag = document.getElementById('keywordFilter').value.trim();
-  filters.resolution = document.getElementById('resFilter').value.trim();
+  filters.resolution = document.getElementById('resFilter').value;
+  filters.year = yearSelect ? yearSelect.value : '';
+  filters.month = monthSelect ? monthSelect.value : '';
   const checkedLora = document.querySelector('.lora-option:checked');
   filters.loraName = checkedLora ? checkedLora.value : '';
   loadMore(true);
@@ -370,4 +438,8 @@ if (uploadForm && dropZone && imageInput) {
 }
 
 // initial load
-loadModels().then(loadLoras).then(() => loadMore(true));
+loadModels()
+  .then(loadLoras)
+  .then(loadResolutions)
+  .then(loadYears)
+  .then(() => loadMore(true));
