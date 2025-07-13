@@ -190,6 +190,25 @@ async function loadResolutions() {
   }
 }
 
+async function loadMonths(year = '') {
+  if (!monthSelect) return;
+  try {
+    const query = year ? `/api/months?year=${year}` : '/api/months';
+    const res = await fetch(query);
+    const months = await res.json();
+    monthSelect.innerHTML = '<option value="">Month</option>';
+    months.forEach((m) => {
+      const opt = document.createElement('option');
+      opt.value = m;
+      opt.textContent = m;
+      if (m === filters.month) opt.selected = true;
+      monthSelect.appendChild(opt);
+    });
+  } catch (err) {
+    console.error('[VisionVault] Failed to load months', err);
+  }
+}
+
 async function loadYears() {
   if (!yearSelect) return;
   try {
@@ -206,19 +225,7 @@ async function loadYears() {
   } catch (err) {
     console.error('[VisionVault] Failed to load years', err);
   }
-  if (monthSelect) {
-    const months = [
-      '01','02','03','04','05','06','07','08','09','10','11','12'
-    ];
-    monthSelect.innerHTML = '<option value="">Month</option>';
-    months.forEach((m, i) => {
-      const opt = document.createElement('option');
-      opt.value = m;
-      opt.textContent = m;
-      if (m === filters.month) opt.selected = true;
-      monthSelect.appendChild(opt);
-    });
-  }
+  await loadMonths(filters.year);
 }
 
 function createItem(img) {
@@ -386,6 +393,15 @@ filterForm.addEventListener('submit', (e) => {
   filters.loraName = checkedLora ? checkedLora.value : '';
   loadMore(true);
 });
+
+if (yearSelect) {
+  yearSelect.addEventListener('change', () => {
+    filters.year = yearSelect.value;
+    filters.month = '';
+    if (monthSelect) monthSelect.value = '';
+    loadMonths(filters.year);
+  });
+}
 
 searchInput.addEventListener('input', () => {
   filters.tag = searchInput.value.trim();
