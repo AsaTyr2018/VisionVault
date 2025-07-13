@@ -26,7 +26,8 @@ db.prepare(`CREATE TABLE IF NOT EXISTS images (
   tags TEXT,
   metadata TEXT,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  user_id INTEGER
+  user_id INTEGER,
+  private INTEGER DEFAULT 0
 )`).run();
 
 // Backwards compatibility: older versions of the database might miss the
@@ -43,6 +44,9 @@ if (!cols.some((c) => c.name === 'created_at')) {
 }
 if (!cols.some((c) => c.name === 'user_id')) {
   db.prepare('ALTER TABLE images ADD COLUMN user_id INTEGER').run();
+}
+if (!cols.some((c) => c.name === 'private')) {
+  db.prepare('ALTER TABLE images ADD COLUMN private INTEGER DEFAULT 0').run();
 }
 
 db.prepare(`CREATE TABLE IF NOT EXISTS users (
@@ -264,7 +268,7 @@ app.post('/api/upload', requireAuth, upload.array('images'), (req, res) => {
   if (!files.length) return res.status(400).json({ error: 'No files uploaded' });
 
   const stmt = db.prepare(
-    'INSERT INTO images (filename, prompt, tags, metadata, created_at, user_id) VALUES (?, ?, ?, ?, ?, ?)'
+    'INSERT INTO images (filename, prompt, tags, metadata, created_at, user_id, private) VALUES (?, ?, ?, ?, ?, ?, ?)'
   );
   files.forEach((file) => {
     const metaString = extractParameters(file.path);
@@ -278,13 +282,15 @@ app.post('/api/upload', requireAuth, upload.array('images'), (req, res) => {
     } catch {
       createdAt = new Date().toISOString().replace('T', ' ').split('.')[0];
     }
+    const priv = req.body.private === 'true' || req.body.private === '1' ? 1 : 0;
     stmt.run(
       path.basename(file.path),
       prompt,
       tags,
       metaString,
       createdAt,
-      req.session.userId
+      req.session.userId,
+      priv
     );
   });
 
@@ -304,6 +310,7 @@ app.get('/api/images', (req, res) => {
     height,
     year,
     month,
+    user,
     sort = 'date_desc'
   } = req.query;
   const conditions = [];
@@ -340,7 +347,19 @@ app.get('/api/images', (req, res) => {
     conditions.push("strftime('%m', created_at) = ?");
     params.push(String(month).padStart(2, '0'));
   }
+  if (user) {
+    conditions.push('users.username = ?');
+    params.push(user);
+  }
   let query = 'SELECT images.*, users.username FROM images LEFT JOIN users ON images.user_id = users.id';
+  if (req.session.role !== 'admin') {
+    if (req.session.userId) {
+      conditions.push('(images.private = 0 OR images.user_id = ?)');
+      params.push(req.session.userId);
+    } else {
+      conditions.push('images.private = 0');
+    }
+  }
   if (conditions.length) query += ' WHERE ' + conditions.join(' AND ');
 
   let orderClause = 'ORDER BY created_at DESC';
@@ -370,7 +389,8 @@ app.get('/api/images', (req, res) => {
       height: meta.height,
       hasLora: meta.hasLora,
       loras: meta.loras,
-      uploader: r.username || 'unknown'
+      uploader: r.username || 'unknown',
+      private: !!r.private
     };
   });
   res.json(images);
@@ -403,6 +423,14 @@ app.get('/api/models', (_req, res) => {
     if (meta.model) models.add(meta.model);
   });
   res.json(Array.from(models).sort());
+});
+
+// List users who uploaded images for username filter
+app.get('/api/usernames', (_req, res) => {
+  const rows = db
+    .prepare('SELECT DISTINCT users.username FROM images JOIN users ON images.user_id = users.id WHERE users.username IS NOT NULL')
+    .all();
+  res.json(rows.map((r) => r.username));
 });
 
 // List unique LoRAs for filter UI
@@ -517,6 +545,11 @@ app.get('/api/stats', (_req, res) => {
     .slice(0, 10)
     .map(([tag, count]) => ({ tag, count }));
   const loraList = Array.from(loras).sort();
+  const userRows = db
+    .prepare(
+      'SELECT users.username, COUNT(images.id) as count FROM images LEFT JOIN users ON images.user_id = users.id GROUP BY users.username ORDER BY count DESC LIMIT 5'
+    )
+    .all();
   const storage = getStorageStats();
   storage.images = getDirectorySize(uploadDir);
   res.json({
@@ -526,6 +559,7 @@ app.get('/api/stats', (_req, res) => {
     topTags,
     topTriggers,
     loras: loraList,
+    topUsers: userRows.map((r) => ({ username: r.username || 'unknown', count: r.count })),
     storage
   });
 });
@@ -571,6 +605,19 @@ app.post('/api/change-password', requireAuth, async (req, res) => {
   const hash = await bcrypt.hash(newPassword, 10);
   db.prepare('UPDATE users SET password_hash = ? WHERE id = ?').run(hash, req.session.userId);
   res.json({ success: true });
+});
+
+// Update privacy flag on an image
+app.post('/api/images/:id/private', requireAuth, (req, res) => {
+  const id = parseInt(req.params.id, 10);
+  if (!id) return res.status(400).json({ error: 'Invalid id' });
+  const row = db.prepare('SELECT user_id FROM images WHERE id = ?').get(id);
+  if (!row) return res.status(404).json({ error: 'Not found' });
+  if (req.session.role !== 'admin' && row.user_id !== req.session.userId)
+    return res.status(403).json({ error: 'Forbidden' });
+  const priv = req.body.private ? 1 : 0;
+  db.prepare('UPDATE images SET private = ? WHERE id = ?').run(priv, id);
+  res.json({ success: true, private: !!priv });
 });
 
 // Remove a single image by id

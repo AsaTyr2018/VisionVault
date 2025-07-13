@@ -227,6 +227,17 @@ img {
   z-index: 1;
 }
 
+.private-btn {
+  position: absolute;
+  bottom: 0.25rem;
+  right: 0.25rem;
+  background: none;
+  border: none;
+  color: var(--text-color);
+  cursor: pointer;
+  z-index: 1;
+}
+
 .drop-zone {
   border: 2px dashed var(--accent-teal);
   padding: 0.5rem;
