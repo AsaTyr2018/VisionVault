@@ -47,7 +47,7 @@ If upgrading from an older version, the database schema is adjusted automaticall
 
 ### User Accounts
 
-The server now includes basic authentication using sessions. An initial `admin` account is created automatically. Images that predate the account system are stored without an owner (displayed as "unknown"). Register new accounts on `login.html` or manage users from `admin.html` (admin only). **Delete the default `admin` user after creating your own admin account.** Regular users can upload and delete only their own images, while guests may browse the gallery.
+The server now includes basic authentication using sessions. An initial `admin` account is created automatically *only if no other admin users exist*. Images that predate the account system are stored without an owner (displayed as "unknown"). Register new accounts on `login.html` or manage users from `admin.html` (admin only). **Delete the default `admin` user after creating your own admin account.** Regular users can upload and delete only their own images, while guests may browse the gallery.
 
 ### Docker Setup
 

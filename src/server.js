@@ -52,8 +52,11 @@ db.prepare(`CREATE TABLE IF NOT EXISTS users (
   role TEXT DEFAULT 'user'
 )`).run();
 
+const existingAdmin = db
+  .prepare("SELECT id FROM users WHERE role = 'admin' LIMIT 1")
+  .get();
 let admin = db.prepare('SELECT * FROM users WHERE username = ?').get('admin');
-if (!admin) {
+if (!admin && !existingAdmin) {
   const hash = bcrypt.hashSync('admin', 10);
   const info = db
     .prepare('INSERT INTO users (username, password_hash, role) VALUES (?, ?, ?)')
