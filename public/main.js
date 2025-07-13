@@ -240,6 +240,10 @@ async function loadNsfwWords() {
   }
 }
 
+function containsNsfw(tags) {
+  return tags.some((t) => nsfwWords.some((w) => t.includes(w)));
+}
+
 function createItem(img) {
   const wrapper = document.createElement('div');
   wrapper.className = 'gallery-item';
@@ -288,7 +292,7 @@ function createItem(img) {
   wrapper.appendChild(meta);
   wrapper.appendChild(checkbox);
   wrapper.appendChild(delBtn);
-  if (hideNsfw && nsfwWords.some((w) => img.tags.includes(w))) {
+  if (hideNsfw && containsNsfw(img.tags)) {
     wrapper.style.display = 'none';
     wrapper.dataset.nsfwHidden = 'true';
   }
@@ -449,7 +453,7 @@ function applyNsfwFilter(on) {
   localStorage.setItem('vv-nsfw', hideNsfw ? 'on' : 'off');
   document.querySelectorAll('.gallery-item').forEach((item) => {
     const data = JSON.parse(item.dataset.meta);
-    const has = data.tags.some((t) => nsfwWords.includes(t));
+    const has = containsNsfw(data.tags);
     item.style.display = hideNsfw && has ? 'none' : '';
   });
 }
