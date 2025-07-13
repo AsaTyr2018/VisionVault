@@ -221,6 +221,7 @@ app.post('/api/register', async (req, res) => {
     const info = db.prepare('INSERT INTO users (username, password_hash) VALUES (?, ?)').run(username, hash);
     req.session.userId = info.lastInsertRowid;
     req.session.role = 'user';
+    req.session.username = username;
     res.json({ success: true });
   } catch {
     res.status(400).json({ error: 'User exists' });
@@ -235,11 +236,20 @@ app.post('/api/login', async (req, res) => {
   if (!ok) return res.status(400).json({ error: 'Invalid credentials' });
   req.session.userId = user.id;
   req.session.role = user.role;
+  req.session.username = user.username;
   res.json({ success: true, role: user.role });
 });
 
 app.post('/api/logout', (req, res) => {
   req.session.destroy(() => res.json({ success: true }));
+});
+
+app.get('/api/session', (req, res) => {
+  if (req.session.userId) {
+    res.json({ loggedIn: true, role: req.session.role, username: req.session.username });
+  } else {
+    res.json({ loggedIn: false });
+  }
 });
 
 app.post('/api/upload', requireAuth, upload.array('images'), (req, res) => {
@@ -530,6 +540,17 @@ app.post('/api/admin/delete-user', requireAdmin, (req, res) => {
   if (!id) return res.status(400).json({ error: 'Invalid id' });
   db.prepare('DELETE FROM users WHERE id = ?').run(id);
   db.prepare('DELETE FROM images WHERE user_id = ?').run(id);
+  res.json({ success: true });
+});
+
+app.post('/api/change-password', requireAuth, async (req, res) => {
+  const { oldPassword, newPassword } = req.body || {};
+  if (!oldPassword || !newPassword) return res.status(400).json({ error: 'Missing fields' });
+  const user = db.prepare('SELECT password_hash FROM users WHERE id = ?').get(req.session.userId);
+  const ok = await bcrypt.compare(oldPassword, user.password_hash);
+  if (!ok) return res.status(400).json({ error: 'Invalid password' });
+  const hash = await bcrypt.hash(newPassword, 10);
+  db.prepare('UPDATE users SET password_hash = ? WHERE id = ?').run(hash, req.session.userId);
   res.json({ success: true });
 });
 

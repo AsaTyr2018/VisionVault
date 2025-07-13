@@ -19,6 +19,7 @@
       <a href="upload.html" class="px-3 py-1 bg-gray-700 hover:bg-gray-600 rounded">Upload</a>
       <a href="admin.html" class="px-3 py-1 bg-gray-700 hover:bg-gray-600 rounded">Admin</a>
       <a href="login.html" class="px-3 py-1 bg-gray-700 hover:bg-gray-600 rounded">Login</a>
+      <a href="password.html" class="px-3 py-1 bg-gray-700 hover:bg-gray-600 rounded pass-link" style="display:none">Password</a>
       <button id="themeToggle" type="button" class="px-3 py-1 bg-gray-700 hover:bg-gray-600 rounded" title="Toggle theme">☀</button>
       <button id="nsfwToggle" type="button" class="px-3 py-1 bg-gray-700 hover:bg-gray-600 rounded" title="Toggle NSFW filter">🔞</button>
     </nav>
@@ -33,6 +34,7 @@
         <a href="upload.html" class="block px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded">Upload</a>
         <a href="admin.html" class="block px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded">Admin</a>
         <a href="login.html" class="block px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded">Login</a>
+        <a href="password.html" class="block px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded pass-link" style="display:none">Password</a>
       </nav>
     </aside>
     <main class="flex-1 p-6 overflow-y-auto">
@@ -198,9 +200,10 @@
         a.textContent = l;
         a.href = `gallery.html?loraName=${encodeURIComponent(l)}`;
         li.appendChild(a);
-        ll.appendChild(li);
+    ll.appendChild(li);
       });
     });
   </script>
+  <script src="auth.js"></script>
 </body>
 </html>
