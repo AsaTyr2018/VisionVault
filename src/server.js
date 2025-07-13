@@ -3,6 +3,8 @@ const path = require('path');
 const fs = require('fs');
 const multer = require('multer');
 const Database = require('better-sqlite3');
+const session = require('express-session');
+const bcrypt = require('bcrypt');
 const { execSync } = require('child_process');
 
 const app = express();
@@ -23,7 +25,8 @@ db.prepare(`CREATE TABLE IF NOT EXISTS images (
   prompt TEXT,
   tags TEXT,
   metadata TEXT,
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  user_id INTEGER DEFAULT 1
 )`)
   .run();
 
@@ -38,6 +41,23 @@ if (!cols.some((c) => c.name === 'created_at')) {
   db.prepare(
     "UPDATE images SET created_at = datetime('now') WHERE created_at IS NULL"
   ).run();
+}
+if (!cols.some((c) => c.name === 'user_id')) {
+  db.prepare("ALTER TABLE images ADD COLUMN user_id INTEGER DEFAULT 1").run();
+  db.prepare("UPDATE images SET user_id = 1 WHERE user_id IS NULL").run();
+}
+
+db.prepare(`CREATE TABLE IF NOT EXISTS users (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  username TEXT UNIQUE,
+  password_hash TEXT,
+  role TEXT DEFAULT 'user'
+)`).run();
+
+const admin = db.prepare('SELECT * FROM users WHERE username = ?').get('admin');
+if (!admin) {
+  const hash = bcrypt.hashSync('admin', 10);
+  db.prepare('INSERT INTO users (username, password_hash, role) VALUES (?, ?, ?)' ).run('admin', hash, 'admin');
 }
 
 // File upload configuration
@@ -76,6 +96,13 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 app.use(express.json());
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET || 'visionvault-secret',
+    resave: false,
+    saveUninitialized: false,
+  })
+);
 app.use(express.static(path.join(__dirname, '..', 'public')));
 
 function extractParameters(imagePath) {
@@ -176,12 +203,51 @@ function parseMetadata(meta) {
   return res;
 }
 
-app.post('/api/upload', upload.array('images'), (req, res) => {
+function requireAuth(req, res, next) {
+  if (!req.session.userId) return res.status(401).json({ error: 'Not logged in' });
+  next();
+}
+
+function requireAdmin(req, res, next) {
+  if (req.session.role !== 'admin') return res.status(403).json({ error: 'Admin only' });
+  next();
+}
+
+app.post('/api/register', async (req, res) => {
+  const { username, password } = req.body || {};
+  if (!username || !password) return res.status(400).json({ error: 'Missing fields' });
+  try {
+    const hash = await bcrypt.hash(password, 10);
+    const info = db.prepare('INSERT INTO users (username, password_hash) VALUES (?, ?)').run(username, hash);
+    req.session.userId = info.lastInsertRowid;
+    req.session.role = 'user';
+    res.json({ success: true });
+  } catch {
+    res.status(400).json({ error: 'User exists' });
+  }
+});
+
+app.post('/api/login', async (req, res) => {
+  const { username, password } = req.body || {};
+  const user = db.prepare('SELECT * FROM users WHERE username = ?').get(username);
+  if (!user) return res.status(400).json({ error: 'Invalid credentials' });
+  const ok = await bcrypt.compare(password, user.password_hash);
+  if (!ok) return res.status(400).json({ error: 'Invalid credentials' });
+  req.session.userId = user.id;
+  req.session.role = user.role;
+  res.json({ success: true, role: user.role });
+});
+
+app.post('/api/logout', (req, res) => {
+  req.session.destroy(() => res.json({ success: true }));
+});
+
+app.post('/api/upload', requireAuth, upload.array('images'), (req, res) => {
   const files = req.files || [];
   if (!files.length) return res.status(400).json({ error: 'No files uploaded' });
 
   const stmt = db.prepare(
-    'INSERT INTO images (filename, prompt, tags, metadata, created_at) VALUES (?, ?, ?, ?, ?)'
+    'INSERT INTO images (filename, prompt, tags, metadata, created_at, user_id) VALUES (?, ?, ?, ?, ?, ?)'
   );
   files.forEach((file) => {
     const metaString = extractParameters(file.path);
@@ -195,7 +261,14 @@ app.post('/api/upload', upload.array('images'), (req, res) => {
     } catch {
       createdAt = new Date().toISOString().replace('T', ' ').split('.')[0];
     }
-    stmt.run(path.basename(file.path), prompt, tags, metaString, createdAt);
+    stmt.run(
+      path.basename(file.path),
+      prompt,
+      tags,
+      metaString,
+      createdAt,
+      req.session.userId
+    );
   });
 
   res.json({ success: true, count: files.length });
@@ -434,12 +507,40 @@ app.get('/api/stats', (_req, res) => {
   });
 });
 
+app.get('/api/admin/users', requireAdmin, (_req, res) => {
+  const users = db.prepare('SELECT id, username, role FROM users').all();
+  res.json(users);
+});
+
+app.post('/api/admin/create-user', requireAdmin, async (req, res) => {
+  const { username, password, role = 'user' } = req.body || {};
+  if (!username || !password)
+    return res.status(400).json({ error: 'Missing fields' });
+  try {
+    const hash = await bcrypt.hash(password, 10);
+    db.prepare('INSERT INTO users (username, password_hash, role) VALUES (?, ?, ?)').run(username, hash, role);
+    res.json({ success: true });
+  } catch {
+    res.status(400).json({ error: 'User exists' });
+  }
+});
+
+app.post('/api/admin/delete-user', requireAdmin, (req, res) => {
+  const { id } = req.body || {};
+  if (!id) return res.status(400).json({ error: 'Invalid id' });
+  db.prepare('DELETE FROM users WHERE id = ?').run(id);
+  db.prepare('DELETE FROM images WHERE user_id = ?').run(id);
+  res.json({ success: true });
+});
+
 // Remove a single image by id
-app.delete('/api/images/:id', (req, res) => {
+app.delete('/api/images/:id', requireAuth, (req, res) => {
   const id = parseInt(req.params.id, 10);
   if (!id) return res.status(400).json({ error: 'Invalid id' });
-  const row = db.prepare('SELECT filename FROM images WHERE id = ?').get(id);
+  const row = db.prepare('SELECT filename, user_id FROM images WHERE id = ?').get(id);
   if (!row) return res.status(404).json({ error: 'Not found' });
+  if (req.session.role !== 'admin' && row.user_id !== req.session.userId)
+    return res.status(403).json({ error: 'Forbidden' });
   const filePath = path.join(uploadDir, row.filename);
   try {
     fs.unlinkSync(filePath);
@@ -451,14 +552,15 @@ app.delete('/api/images/:id', (req, res) => {
 });
 
 // Bulk removal endpoint
-app.post('/api/images/delete', (req, res) => {
+app.post('/api/images/delete', requireAuth, (req, res) => {
   const ids = Array.isArray(req.body.ids) ? req.body.ids : [];
   if (!ids.length) return res.status(400).json({ error: 'No ids provided' });
-  const getStmt = db.prepare('SELECT filename FROM images WHERE id = ?');
+  const getStmt = db.prepare('SELECT filename, user_id FROM images WHERE id = ?');
   const delStmt = db.prepare('DELETE FROM images WHERE id = ?');
   ids.forEach((id) => {
     const row = getStmt.get(id);
     if (row) {
+      if (req.session.role !== 'admin' && row.user_id !== req.session.userId) return;
       const filePath = path.join(uploadDir, row.filename);
       try {
         fs.unlinkSync(filePath);
