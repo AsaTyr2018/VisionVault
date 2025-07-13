@@ -4,6 +4,7 @@ const imageInput = document.getElementById('imageInput');
 const statusEl = document.getElementById('uploadStatus');
 const queueEl = document.getElementById('uploadQueue');
 const themeToggle = document.getElementById('themeToggle');
+const nsfwToggle = document.getElementById('nsfwToggle');
 
 const queue = [];
 let uploading = false;
@@ -91,4 +92,15 @@ themeToggle.addEventListener('click', () => {
   applyTheme(next);
 });
 
+function applyNsfwFilter(on) {
+  nsfwToggle.textContent = on ? '🚫' : '🔞';
+  localStorage.setItem('vv-nsfw', on ? 'on' : 'off');
+}
+
+nsfwToggle.addEventListener('click', () => {
+  const current = localStorage.getItem('vv-nsfw') !== 'off';
+  applyNsfwFilter(!current);
+});
+
 applyTheme(localStorage.getItem('vv-theme') || 'dark');
+applyNsfwFilter(localStorage.getItem('vv-nsfw') !== 'off');

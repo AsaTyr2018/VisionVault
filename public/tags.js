@@ -1,5 +1,6 @@
 const container = document.getElementById('tagCloud');
 const themeToggle = document.getElementById('themeToggle');
+const nsfwToggle = document.getElementById('nsfwToggle');
 
 async function fetchTags() {
   const res = await fetch('/api/tags');
@@ -44,4 +45,15 @@ themeToggle.addEventListener('click', () => {
   applyTheme(next);
 });
 
+function applyNsfwFilter(on) {
+  nsfwToggle.textContent = on ? '🚫' : '🔞';
+  localStorage.setItem('vv-nsfw', on ? 'on' : 'off');
+}
+
+nsfwToggle.addEventListener('click', () => {
+  const current = localStorage.getItem('vv-nsfw') !== 'off';
+  applyNsfwFilter(!current);
+});
+
 applyTheme(localStorage.getItem('vv-theme') || 'dark');
+applyNsfwFilter(localStorage.getItem('vv-nsfw') !== 'off');
