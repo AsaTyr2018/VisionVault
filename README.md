@@ -5,12 +5,14 @@ VisionVault is a lightweight image board tailored for AI-generated artwork. Uplo
 ## Features
 
 - Drag-and-drop bulk uploads with automatic extraction of PNG `Parameters` metadata
-- Images and metadata stored in a local SQLite database
+- Local SQLite database stores images and all parsed metadata
 - Infinite scrolling gallery with quick tag preview
 - Sorting by date or first tag (trigger)
-- Filters for tags, model names, LoRA references and resolution
-- LoRA names are detected from prompt references and the `Lora hashes` metadata field
+- Filters for tags, model names, LoRA references, resolution, year and month
+- LoRA names detected from prompt references and the `Lora hashes` metadata field
+- Dashboard summarising image counts, unique tags and storage use
 - Tag cloud page showing popular keywords
+- NSFW filter toggle driven by the optional `nsfw.txt` blacklist
 - Metadata drawer and fullscreen modal per image
 - Single or bulk deletion of images
 - Light/dark theme toggle for improved usability
@@ -18,7 +20,7 @@ VisionVault is a lightweight image board tailored for AI-generated artwork. Uplo
 
 ## Use Cases
 
-VisionVault acts as a personal vault for experiments with Stable Diffusion or similar generators. By capturing prompts and model settings, it lets you track variations, compare results and revisit earlier work. Small teams can also share a common gallery to exchange ideas or manage LoRA-based workflows.
+VisionVault suits anyone exploring generative art. It keeps a detailed history of prompts, models and LoRAs so you can revisit earlier attempts or branch off new ideas. Individuals can treat it as a searchable sketchbook, while small teams may share a common gallery to coordinate LoRA testing or compare results across different models.
 
 ## Getting Started
 
@@ -59,14 +61,24 @@ To update an existing container without losing data, run `python update.py`.
 The Express server exposes the following endpoints:
 
 - `POST /api/upload` – upload one or more images and record their metadata
-- `GET /api/images` – list images with filters (`tag`, `model`, `lora`, `width`, `height`, `offset`, `limit`)
+- `GET /api/images` – list images with filters (`tag`, `model`, `loraName`, `width`, `height`, `year`, `month`, `offset`, `limit`, `sort`)
 - `DELETE /api/images/:id` – remove a single image
 - `POST /api/images/delete` – bulk remove images via an `ids` array
 - `GET /api/tags` – return a tag frequency list for the tag cloud
+- `GET /api/models` – list unique models from metadata
+- `GET /api/loras` – list unique LoRA names
+- `GET /api/resolutions` – list available resolutions
+- `GET /api/nsfw-tags` – return blacklist words for the NSFW toggle
+- `GET /api/years` – list years present in the collection
+- `GET /api/months` – list months for a given year
+- `GET /api/stats` – return dashboard statistics
 
 ### Project Structure
-- **src/server.js** – main server implementation
-- **public/** – static files for the dashboard, gallery and upload pages
+- **src/server.js** – Express server and API routes
+- **public/** – static HTML, JavaScript and styles for the dashboard, gallery and upload pages
+- **tools/refreshMetadata.js** – utility script to rescan existing images and fill in metadata
+- **docker_setup/** – helper scripts for building container images
+- **prestart.sh** – optional script to pull updates and install dependencies
 
 The default `index.html` now shows a dashboard with basic statistics. Browse images through `public/gallery.html`. Upload images via `public/upload.html`. Hover an image in the gallery to preview its main tag or open the metadata drawer for complete details.
 
