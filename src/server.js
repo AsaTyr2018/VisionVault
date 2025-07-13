@@ -198,6 +198,10 @@ app.get('/api/images', (req, res) => {
     limit = 50,
     lora,
     loraName,
+    width,
+    height,
+    year,
+    month,
     sort = 'date_desc'
   } = req.query;
   const conditions = [];
@@ -217,6 +221,18 @@ app.get('/api/images', (req, res) => {
   if (loraName) {
     conditions.push('metadata LIKE ?');
     params.push(`%${loraName}%`);
+  }
+  if (width && height) {
+    conditions.push('metadata LIKE ?');
+    params.push(`%${width}x${height}%`);
+  }
+  if (year) {
+    conditions.push("strftime('%Y', created_at) = ?");
+    params.push(String(year));
+  }
+  if (month) {
+    conditions.push("strftime('%m', created_at) = ?");
+    params.push(String(month).padStart(2, '0'));
   }
   let query = 'SELECT * FROM images';
   if (conditions.length) query += ' WHERE ' + conditions.join(' AND ');
@@ -291,6 +307,30 @@ app.get('/api/loras', (_req, res) => {
     if (meta.loras) meta.loras.forEach((l) => loras.add(l));
   });
   res.json(Array.from(loras).sort());
+});
+
+// List unique resolutions for filter UI
+app.get('/api/resolutions', (_req, res) => {
+  const rows = db.prepare('SELECT metadata FROM images').all();
+  const resolutions = new Set();
+  rows.forEach((r) => {
+    const meta = parseMetadata(r.metadata || '');
+    if (meta.width && meta.height) {
+      resolutions.add(`${meta.width}x${meta.height}`);
+    }
+  });
+  const list = Array.from(resolutions).sort((a, b) => {
+    const [aw, ah] = a.split('x').map(Number);
+    const [bw, bh] = b.split('x').map(Number);
+    return aw * ah - bw * bh;
+  });
+  res.json(list);
+});
+
+// List unique years for creation date filter
+app.get('/api/years', (_req, res) => {
+  const rows = db.prepare("SELECT DISTINCT strftime('%Y', created_at) AS y FROM images ORDER BY y DESC").all();
+  res.json(rows.map((r) => r.y));
 });
 
 // Basic statistics for dashboard
