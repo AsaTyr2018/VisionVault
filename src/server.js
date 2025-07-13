@@ -26,9 +26,8 @@ db.prepare(`CREATE TABLE IF NOT EXISTS images (
   tags TEXT,
   metadata TEXT,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  user_id INTEGER DEFAULT 1
-)`)
-  .run();
+  user_id INTEGER
+)`).run();
 
 // Backwards compatibility: older versions of the database might miss the
 // `created_at` column. Check and add it if necessary so inserts won't fail.
@@ -43,8 +42,7 @@ if (!cols.some((c) => c.name === 'created_at')) {
   ).run();
 }
 if (!cols.some((c) => c.name === 'user_id')) {
-  db.prepare("ALTER TABLE images ADD COLUMN user_id INTEGER DEFAULT 1").run();
-  db.prepare("UPDATE images SET user_id = 1 WHERE user_id IS NULL").run();
+  db.prepare('ALTER TABLE images ADD COLUMN user_id INTEGER').run();
 }
 
 db.prepare(`CREATE TABLE IF NOT EXISTS users (
@@ -54,10 +52,16 @@ db.prepare(`CREATE TABLE IF NOT EXISTS users (
   role TEXT DEFAULT 'user'
 )`).run();
 
-const admin = db.prepare('SELECT * FROM users WHERE username = ?').get('admin');
+let admin = db.prepare('SELECT * FROM users WHERE username = ?').get('admin');
 if (!admin) {
   const hash = bcrypt.hashSync('admin', 10);
-  db.prepare('INSERT INTO users (username, password_hash, role) VALUES (?, ?, ?)' ).run('admin', hash, 'admin');
+  const info = db
+    .prepare('INSERT INTO users (username, password_hash, role) VALUES (?, ?, ?)')
+    .run('admin', hash, 'admin');
+  admin = { id: info.lastInsertRowid, username: 'admin', role: 'admin' };
+}
+if (admin) {
+  db.prepare('UPDATE images SET user_id = NULL WHERE user_id = ?').run(admin.id);
 }
 
 // File upload configuration
