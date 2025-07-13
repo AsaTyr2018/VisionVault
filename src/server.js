@@ -8,6 +8,9 @@ const { execSync } = require('child_process');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Path to the optional NSFW blacklist
+const nsfwFile = process.env.NSFW_FILE || path.join(__dirname, '..', 'nsfw.txt');
+
 // Database setup. Allow overriding the location for Docker or custom setups.
 const dbPath = process.env.DB_PATH || path.join(__dirname, '..', 'visionvault.db');
 // Ensure the directory for the database exists (useful for Docker volumes)
@@ -333,6 +336,20 @@ app.get('/api/resolutions', (_req, res) => {
     return aw * ah - bw * bh;
   });
   res.json(list);
+});
+
+// Return blacklist words for optional NSFW filtering
+app.get('/api/nsfw-tags', (_req, res) => {
+  try {
+    const txt = fs.readFileSync(nsfwFile, 'utf8');
+    const words = txt
+      .split(/\r?\n/)
+      .map((w) => w.trim().toLowerCase())
+      .filter(Boolean);
+    res.json(words);
+  } catch {
+    res.json([]);
+  }
 });
 
 // List unique years for creation date filter

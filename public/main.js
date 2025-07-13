@@ -14,6 +14,7 @@ const dropZone = document.getElementById('dropZone');
 const imageInput = document.getElementById('imageInput');
 const sortSelect = document.getElementById('sortSelect');
 const themeToggle = document.getElementById('themeToggle');
+const nsfwToggle = document.getElementById('nsfwToggle');
 const modelListEl = document.getElementById('modelList');
 const loraListEl = document.getElementById('loraList');
 const yearSelect = document.getElementById('yearFilter');
@@ -27,6 +28,8 @@ function debug(...args) {
 let offset = 0;
 const limit = 50;
 let loading = false;
+let nsfwWords = [];
+let hideNsfw = localStorage.getItem('vv-nsfw') !== 'off';
 let filters = {
   tag: '',
   model: '',
@@ -228,6 +231,15 @@ async function loadYears() {
   await loadMonths(filters.year);
 }
 
+async function loadNsfwWords() {
+  try {
+    const res = await fetch('/api/nsfw-tags');
+    nsfwWords = await res.json();
+  } catch {
+    nsfwWords = [];
+  }
+}
+
 function createItem(img) {
   const wrapper = document.createElement('div');
   wrapper.className = 'gallery-item';
@@ -276,6 +288,10 @@ function createItem(img) {
   wrapper.appendChild(meta);
   wrapper.appendChild(checkbox);
   wrapper.appendChild(delBtn);
+  if (hideNsfw && nsfwWords.some((w) => img.tags.includes(w))) {
+    wrapper.style.display = 'none';
+    wrapper.dataset.nsfwHidden = 'true';
+  }
   wrapper.addEventListener('click', (e) => {
     if (
       e.target === checkbox ||
@@ -333,6 +349,7 @@ function renderImages(images, append = true) {
     return;
   }
   images.forEach((img) => gallery.appendChild(createItem(img)));
+  applyNsfwFilter(hideNsfw);
 }
 
 async function loadMore(reset = false) {
@@ -426,14 +443,30 @@ function applyTheme(theme) {
   localStorage.setItem('vv-theme', theme);
 }
 
+function applyNsfwFilter(on) {
+  hideNsfw = on;
+  nsfwToggle.textContent = hideNsfw ? '🚫' : '🔞';
+  localStorage.setItem('vv-nsfw', hideNsfw ? 'on' : 'off');
+  document.querySelectorAll('.gallery-item').forEach((item) => {
+    const data = JSON.parse(item.dataset.meta);
+    const has = data.tags.some((t) => nsfwWords.includes(t));
+    item.style.display = hideNsfw && has ? 'none' : '';
+  });
+}
+
 themeToggle.addEventListener('click', () => {
   const current = document.body.classList.contains('light-theme') ? 'light' : 'dark';
   const next = current === 'light' ? 'dark' : 'light';
   applyTheme(next);
 });
 
+nsfwToggle.addEventListener('click', () => {
+  applyNsfwFilter(!hideNsfw);
+});
+
 // Apply stored theme on load
 applyTheme(localStorage.getItem('vv-theme') || 'dark');
+applyNsfwFilter(hideNsfw);
 
 deleteSelectedBtn.addEventListener('click', deleteSelected);
 
@@ -458,4 +491,5 @@ loadModels()
   .then(loadLoras)
   .then(loadResolutions)
   .then(loadYears)
+  .then(loadNsfwWords)
   .then(() => loadMore(true));
