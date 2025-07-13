@@ -67,6 +67,7 @@
                 <h2 id="statStorage" class="card-title h3">0</h2>
                 <p class="card-text">Storage Used</p>
                 <p id="statStorageText" class="card-text small text-light"></p>
+                <p id="statStorageImagesText" class="card-text small text-light"></p>
               </div>
             </div>
           </div>
@@ -113,6 +114,7 @@
       document.getElementById('statTagsText').textContent = data.topTags.length ? `Top tag: ${data.topTags[0].tag}` : '';
       document.getElementById('statModelsText').textContent = `${data.models} models detected`;
       document.getElementById('statStorageText').textContent = `Using ${gb(data.storage.used)} GB`;
+      document.getElementById('statStorageImagesText').textContent = `Images use ${gb(data.storage.images)} GB`;
 
       new Chart(document.getElementById('countChart').getContext('2d'), {
         type: 'bar',
@@ -129,13 +131,14 @@
       new Chart(document.getElementById('storageChart').getContext('2d'), {
         type: 'doughnut',
         data: {
-          labels: ['Used', 'Free'],
+          labels: ['Images', 'Other', 'Free'],
           datasets: [{
             data: [
-              gb(data.storage.used),
+              gb(data.storage.images),
+              gb(data.storage.used - data.storage.images),
               gb(data.storage.total - data.storage.used)
             ],
-            backgroundColor: ['#0047ab', '#8a2be2']
+            backgroundColor: ['#008080', '#0047ab', '#8a2be2']
           }]
         },
         options: { plugins: { legend: { position: 'bottom' } } }

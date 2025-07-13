@@ -325,6 +325,7 @@ app.get('/api/stats', (_req, res) => {
     .map(([tag, count]) => ({ tag, count }));
   const loraList = Array.from(loras).sort();
   const storage = getStorageStats();
+  storage.images = getDirectorySize(uploadDir);
   res.json({
     images: imgCount,
     tags: totalTags,
