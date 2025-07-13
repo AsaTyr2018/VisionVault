@@ -15,6 +15,7 @@ VisionVault is a lightweight image board tailored for AI-generated artwork. Uplo
 - NSFW filter toggle driven by the optional `nsfw.txt` blacklist
 - Metadata drawer and fullscreen modal per image
 - Single or bulk deletion of images
+- User accounts with role-based permissions (admin & user)
 - Light/dark theme toggle for improved usability
 - Optional `prestart.sh` script to pull updates and reinstall dependencies
 
@@ -41,6 +42,10 @@ Start with an update check using:
 This script fetches Git updates and installs dependencies if required.
 If upgrading from an older version, the database schema is adjusted automatically.
 
+### User Accounts
+
+The server now includes basic authentication using sessions. An initial `admin` account is created automatically and existing images are assigned to this user. Register new accounts on `login.html` or manage users from `admin.html` (admin only). Regular users can upload and delete only their own images, while guests may browse the gallery.
+
 ### Docker Setup
 
 Use the scripts in `docker_setup/` to build a containerized instance of VisionVault.
@@ -64,6 +69,12 @@ The Express server exposes the following endpoints:
 - `GET /api/images` – list images with filters (`tag`, `model`, `loraName`, `width`, `height`, `year`, `month`, `offset`, `limit`, `sort`)
 - `DELETE /api/images/:id` – remove a single image
 - `POST /api/images/delete` – bulk remove images via an `ids` array
+- `POST /api/register` – create a new user
+- `POST /api/login` – authenticate and start a session
+- `POST /api/logout` – end the current session
+- `GET /api/admin/users` – list users (admin)
+- `POST /api/admin/create-user` – create a user (admin)
+- `POST /api/admin/delete-user` – remove a user and their images (admin)
 - `GET /api/tags` – return a tag frequency list for the tag cloud
 - `GET /api/models` – list unique models from metadata
 - `GET /api/loras` – list unique LoRA names
