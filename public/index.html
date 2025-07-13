@@ -89,6 +89,8 @@
         <ul id="topTriggers" class="list-inline mt-3"></ul>
         <h2 class="mt-5">Used LoRAs</h2>
         <ul id="usedLoras" class="list-inline mt-3"></ul>
+        <h2 class="mt-5">Top Uploaders</h2>
+        <ul id="topUsers" class="list-inline mt-3"></ul>
       </div>
     </main>
   </div>
@@ -202,6 +204,21 @@
         li.appendChild(a);
     ll.appendChild(li);
       });
+
+      const tu = document.getElementById('topUsers');
+      if (tu) {
+        tu.innerHTML = '';
+        data.topUsers.forEach(u => {
+          const li = document.createElement('li');
+          li.className = 'list-inline-item m-1';
+          const a = document.createElement('a');
+          a.className = 'badge bg-secondary';
+          a.textContent = `${u.username} (${u.count})`;
+          a.href = `gallery.html?user=${encodeURIComponent(u.username)}`;
+          li.appendChild(a);
+          tu.appendChild(li);
+        });
+      }
     });
   </script>
   <script src="auth.js"></script>

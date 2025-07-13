@@ -19,6 +19,7 @@ const modelListEl = document.getElementById('modelList');
 const loraListEl = document.getElementById('loraList');
 const yearSelect = document.getElementById('yearFilter');
 const monthSelect = document.getElementById('monthFilter');
+const userSelect = document.getElementById('userFilter');
 
 // Simple helper so all debug output is grouped and easy to filter
 function debug(...args) {
@@ -38,8 +39,25 @@ let filters = {
   resolution: '',
   year: '',
   month: '',
+  user: '',
   sort: 'date_desc'
 };
+
+let session = {};
+async function fetchSession() {
+  try {
+    const res = await fetch('/api/session');
+    session = await res.json();
+  } catch {
+    session = { loggedIn: false };
+  }
+  if (session.loggedIn) {
+    deleteSelectedBtn.addEventListener('click', deleteSelected);
+    deleteSelectedBtn.style.display = '';
+  } else {
+    deleteSelectedBtn.style.display = 'none';
+  }
+}
 
 
 // Apply tag from query parameter if present
@@ -76,6 +94,11 @@ if (monthParam) {
   filters.month = monthParam;
   if (monthSelect) monthSelect.value = monthParam;
 }
+const userParam = urlParams.get('user');
+if (userParam) {
+  filters.user = userParam;
+  if (userSelect) userSelect.value = userParam;
+}
 
 function buildQuery() {
   const params = new URLSearchParams();
@@ -92,6 +115,7 @@ function buildQuery() {
   }
   if (filters.year) params.set('year', filters.year);
   if (filters.month) params.set('month', filters.month);
+  if (filters.user) params.set('user', filters.user);
   if (filters.sort) params.set('sort', filters.sort);
   params.set('offset', offset);
   params.set('limit', limit);
@@ -199,6 +223,24 @@ async function loadResolutions() {
   }
 }
 
+async function loadUsers() {
+  if (!userSelect) return;
+  try {
+    const res = await fetch('/api/usernames');
+    const users = await res.json();
+    userSelect.innerHTML = '<option value="">User</option>';
+    users.forEach((u) => {
+      const opt = document.createElement('option');
+      opt.value = u;
+      opt.textContent = u;
+      if (u === filters.user) opt.selected = true;
+      userSelect.appendChild(opt);
+    });
+  } catch (err) {
+    console.error('[VisionVault] Failed to load users', err);
+  }
+}
+
 async function loadMonths(year = '') {
   if (!monthSelect) return;
   try {
@@ -269,6 +311,22 @@ function createItem(img) {
     deleteImage(img.id);
   });
 
+  const privBtn = document.createElement('button');
+  privBtn.className = 'private-btn';
+  privBtn.textContent = img.private ? '🔒' : '🔓';
+  privBtn.addEventListener('click', async (e) => {
+    e.stopPropagation();
+    const res = await fetch(`/api/images/${img.id}/private`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ private: !img.private })
+    });
+    if (res.ok) {
+      img.private = !img.private;
+      privBtn.textContent = img.private ? '🔒' : '🔓';
+    }
+  });
+
   const link = document.createElement('a');
   link.href = img.url;
   link.addEventListener('click', (e) => {
@@ -296,8 +354,12 @@ function createItem(img) {
 
   wrapper.appendChild(link);
   wrapper.appendChild(meta);
-  wrapper.appendChild(checkbox);
-  wrapper.appendChild(delBtn);
+  const canModify = session.loggedIn && (session.role === 'admin' || img.uploader === session.username);
+  if (canModify) {
+    wrapper.appendChild(checkbox);
+    wrapper.appendChild(delBtn);
+    wrapper.appendChild(privBtn);
+  }
   if (hideNsfw && containsNsfw(img.tags)) {
     wrapper.style.display = 'none';
     wrapper.dataset.nsfwHidden = 'true';
@@ -417,6 +479,7 @@ filterForm.addEventListener('submit', (e) => {
   filters.resolution = document.getElementById('resFilter').value;
   filters.year = yearSelect ? yearSelect.value : '';
   filters.month = monthSelect ? monthSelect.value : '';
+  filters.user = userSelect ? userSelect.value : '';
   const checkedLora = document.querySelector('.lora-option:checked');
   filters.loraName = checkedLora ? checkedLora.value : '';
   loadMore(true);
@@ -479,7 +542,6 @@ nsfwToggle.addEventListener('click', () => {
 applyTheme(localStorage.getItem('vv-theme') || 'dark');
 applyNsfwFilter(hideNsfw);
 
-deleteSelectedBtn.addEventListener('click', deleteSelected);
 
 if (uploadForm && dropZone && imageInput) {
   uploadForm.addEventListener('submit', (e) => e.preventDefault());
@@ -498,9 +560,11 @@ if (uploadForm && dropZone && imageInput) {
 }
 
 // initial load
-loadModels()
+fetchSession()
+  .then(loadModels)
   .then(loadLoras)
   .then(loadResolutions)
   .then(loadYears)
+  .then(loadUsers)
   .then(loadNsfwWords)
   .then(() => loadMore(true));

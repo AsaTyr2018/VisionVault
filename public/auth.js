@@ -36,6 +36,10 @@ async function updateAuth() {
   document.querySelectorAll('.pass-link').forEach(a => {
     a.style.display = session.loggedIn ? '' : 'none';
   });
+  document.querySelectorAll('a[href="upload.html"]').forEach(a => {
+    a.style.display = session.loggedIn ? '' : 'none';
+  });
+  window.currentSession = session;
 }
 
 document.addEventListener('DOMContentLoaded', updateAuth);

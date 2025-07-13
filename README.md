@@ -11,6 +11,7 @@ VisionVault is a lightweight image board tailored for AI-generated artwork. Uplo
 - Filters for tags, model names, LoRA references, resolution, year and month
 - LoRA names detected from prompt references and the `Lora hashes` metadata field
 - Dashboard summarising image counts, unique tags and storage use
+- Dashboard shows top uploaders
 - Tag cloud page showing popular keywords
 - NSFW filter toggle driven by the optional `nsfw.txt` blacklist
 - Metadata drawer and fullscreen modal per image
@@ -18,6 +19,7 @@ VisionVault is a lightweight image board tailored for AI-generated artwork. Uplo
 - Search box filters images by prompt or tags
 - Single or bulk deletion of images
 - User accounts with role-based permissions (admin & user)
+- Users can mark uploads as private
 - Admin panel includes a "Take Ownership" action to claim all images
 - Light/dark theme toggle for improved usability
 - Optional `prestart.sh` script to pull updates and reinstall dependencies

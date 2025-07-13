@@ -5,6 +5,7 @@ const statusEl = document.getElementById('uploadStatus');
 const queueEl = document.getElementById('uploadQueue');
 const themeToggle = document.getElementById('themeToggle');
 const nsfwToggle = document.getElementById('nsfwToggle');
+const privateCheckbox = document.getElementById('privateCheckbox');
 
 const queue = [];
 let uploading = false;
@@ -40,6 +41,7 @@ function processQueue() {
   statusEl.textContent = `Uploading ${file.name}...`;
   const formData = new FormData();
   formData.append('images', file);
+  formData.append('private', privateCheckbox && privateCheckbox.checked ? 'true' : 'false');
   const xhr = new XMLHttpRequest();
   xhr.open('POST', '/api/upload');
   xhr.upload.onprogress = (e) => {
