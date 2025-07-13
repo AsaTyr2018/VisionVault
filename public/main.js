@@ -31,6 +31,7 @@ let loading = false;
 let nsfwWords = [];
 let hideNsfw = localStorage.getItem('vv-nsfw') !== 'off';
 let filters = {
+  q: '',
   tag: '',
   model: '',
   loraName: '',
@@ -43,10 +44,14 @@ let filters = {
 
 // Apply tag from query parameter if present
 const urlParams = new URLSearchParams(window.location.search);
+const qParam = urlParams.get('q');
+if (qParam) {
+  filters.q = qParam;
+  if (searchInput) searchInput.value = qParam;
+}
 const tagParam = urlParams.get('tag');
 if (tagParam) {
   filters.tag = tagParam;
-  if (searchInput) searchInput.value = tagParam;
 }
 const sortParam = urlParams.get('sort');
 if (sortParam) {
@@ -74,6 +79,7 @@ if (monthParam) {
 
 function buildQuery() {
   const params = new URLSearchParams();
+  if (filters.q) params.set('q', filters.q);
   if (filters.tag) params.set('tag', filters.tag);
   if (filters.model) params.set('model', filters.model);
   if (filters.loraName) params.set('loraName', filters.loraName);
@@ -382,6 +388,7 @@ function openDrawer(img) {
     <p><strong>Seed:</strong> ${img.seed || ''}</p>
     <p><strong>Size:</strong> ${img.width || '?'}x${img.height || '?'}</p>
     ${img.loras && img.loras.length ? `<p><strong>LoRA:</strong> ${img.loras.join(', ')}</p>` : ''}
+    <p><strong>Uploader:</strong> ${img.uploader || 'unknown'}</p>
   `;
   debug('Opening metadata drawer for image', img.id);
   if (!bsDrawer) bsDrawer = new bootstrap.Offcanvas(drawer);
@@ -425,7 +432,7 @@ if (yearSelect) {
 }
 
 searchInput.addEventListener('input', () => {
-  filters.tag = searchInput.value.trim();
+  filters.q = searchInput.value.trim();
   loadMore(true);
 });
 

@@ -30,6 +30,7 @@
       </select>
       <button class="w-full px-4 py-2 bg-indigo-600 hover:bg-indigo-500 rounded" type="submit">Create</button>
     </form>
+    <button id="takeOwnership" class="w-full mt-4 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 rounded">Take Ownership</button>
   </div>
   <script>
     async function refresh() {
@@ -59,6 +60,10 @@
       addName.value = '';
       addPass.value = '';
       refresh();
+    });
+    document.getElementById('takeOwnership').addEventListener('click', async () => {
+      await fetch('/api/admin/take-ownership', { method: 'POST' });
+      alert('All images now belong to you');
     });
   </script>
   <script src="auth.js"></script>

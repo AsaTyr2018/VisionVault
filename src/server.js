@@ -292,6 +292,7 @@ app.get('/api/images', (req, res) => {
   const {
     tag,
     model,
+    q,
     offset = 0,
     limit = 50,
     lora,
@@ -311,6 +312,10 @@ app.get('/api/images', (req, res) => {
   if (model) {
     conditions.push('metadata LIKE ?');
     params.push(`%${model}%`);
+  }
+  if (q) {
+    conditions.push('(prompt LIKE ? OR tags LIKE ? OR metadata LIKE ?)');
+    params.push(`%${q}%`, `%${q}%`, `%${q}%`);
   }
   if (lora === 'true') {
     conditions.push('metadata LIKE ?');
@@ -332,7 +337,7 @@ app.get('/api/images', (req, res) => {
     conditions.push("strftime('%m', created_at) = ?");
     params.push(String(month).padStart(2, '0'));
   }
-  let query = 'SELECT * FROM images';
+  let query = 'SELECT images.*, users.username FROM images LEFT JOIN users ON images.user_id = users.id';
   if (conditions.length) query += ' WHERE ' + conditions.join(' AND ');
 
   let orderClause = 'ORDER BY created_at DESC';
@@ -361,7 +366,8 @@ app.get('/api/images', (req, res) => {
       width: meta.width,
       height: meta.height,
       hasLora: meta.hasLora,
-      loras: meta.loras
+      loras: meta.loras,
+      uploader: r.username || 'unknown'
     };
   });
   res.json(images);
@@ -544,6 +550,12 @@ app.post('/api/admin/delete-user', requireAdmin, (req, res) => {
   if (!id) return res.status(400).json({ error: 'Invalid id' });
   db.prepare('DELETE FROM users WHERE id = ?').run(id);
   db.prepare('DELETE FROM images WHERE user_id = ?').run(id);
+  res.json({ success: true });
+});
+
+app.post('/api/admin/take-ownership', requireAdmin, (req, res) => {
+  const adminId = req.session.userId;
+  db.prepare('UPDATE images SET user_id = ?').run(adminId);
   res.json({ success: true });
 });
 
