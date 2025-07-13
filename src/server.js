@@ -178,13 +178,21 @@ app.post('/api/upload', upload.array('images'), (req, res) => {
   if (!files.length) return res.status(400).json({ error: 'No files uploaded' });
 
   const stmt = db.prepare(
-    'INSERT INTO images (filename, prompt, tags, metadata, created_at) VALUES (?, ?, ?, ?, datetime(\'now\'))'
+    'INSERT INTO images (filename, prompt, tags, metadata, created_at) VALUES (?, ?, ?, ?, ?)'
   );
   files.forEach((file) => {
     const metaString = extractParameters(file.path);
     const prompt = parsePrompt(metaString);
     const tags = toTags(prompt).join(',');
-    stmt.run(path.basename(file.path), prompt, tags, metaString);
+    let createdAt;
+    try {
+      const stats = fs.statSync(file.path);
+      const dt = stats.birthtime || stats.mtime;
+      createdAt = dt.toISOString().replace('T', ' ').split('.')[0];
+    } catch {
+      createdAt = new Date().toISOString().replace('T', ' ').split('.')[0];
+    }
+    stmt.run(path.basename(file.path), prompt, tags, metaString, createdAt);
   });
 
   res.json({ success: true, count: files.length });
@@ -329,8 +337,40 @@ app.get('/api/resolutions', (_req, res) => {
 
 // List unique years for creation date filter
 app.get('/api/years', (_req, res) => {
-  const rows = db.prepare("SELECT DISTINCT strftime('%Y', created_at) AS y FROM images ORDER BY y DESC").all();
-  res.json(rows.map((r) => r.y));
+  const rows = db.prepare('SELECT filename, created_at FROM images').all();
+  const years = new Set();
+  rows.forEach((r) => {
+    try {
+      const stats = fs.statSync(path.join(uploadDir, r.filename));
+      const dt = stats.birthtime || stats.mtime;
+      years.add(String(dt.getFullYear()));
+    } catch {
+      if (r.created_at) {
+        years.add(String(new Date(r.created_at.replace(' ', 'T')).getFullYear()));
+      }
+    }
+  });
+  res.json(Array.from(years).sort().reverse());
+});
+
+app.get('/api/months', (req, res) => {
+  const { year } = req.query;
+  const yr = year ? parseInt(year, 10) : null;
+  const rows = db.prepare('SELECT filename, created_at FROM images').all();
+  const months = new Set();
+  rows.forEach((r) => {
+    let dt;
+    try {
+      const stats = fs.statSync(path.join(uploadDir, r.filename));
+      dt = stats.birthtime || stats.mtime;
+    } catch {
+      dt = r.created_at ? new Date(r.created_at.replace(' ', 'T')) : null;
+    }
+    if (!dt) return;
+    if (yr && dt.getFullYear() !== yr) return;
+    months.add(String(dt.getMonth() + 1).padStart(2, '0'));
+  });
+  res.json(Array.from(months).sort());
 });
 
 // Basic statistics for dashboard
