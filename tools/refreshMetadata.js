@@ -14,7 +14,7 @@ db.prepare(`CREATE TABLE IF NOT EXISTS images (
   tags TEXT,
   metadata TEXT,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  user_id INTEGER DEFAULT 1
+  user_id INTEGER
 )`).run();
 
 db.prepare(`CREATE TABLE IF NOT EXISTS users (
@@ -24,11 +24,17 @@ db.prepare(`CREATE TABLE IF NOT EXISTS users (
   role TEXT DEFAULT 'user'
 )`).run();
 
-const admin = db.prepare('SELECT * FROM users WHERE username = ?').get('admin');
+let admin = db.prepare('SELECT * FROM users WHERE username = ?').get('admin');
 if (!admin) {
   const bcrypt = require('bcrypt');
   const hash = bcrypt.hashSync('admin', 10);
-  db.prepare('INSERT INTO users (username, password_hash, role) VALUES (?, ?, ?)').run('admin', hash, 'admin');
+  const info = db
+    .prepare('INSERT INTO users (username, password_hash, role) VALUES (?, ?, ?)')
+    .run('admin', hash, 'admin');
+  admin = { id: info.lastInsertRowid, username: 'admin', role: 'admin' };
+}
+if (admin) {
+  db.prepare('UPDATE images SET user_id = NULL WHERE user_id = ?').run(admin.id);
 }
 
 const uploadDir = path.join(__dirname, '..', 'public', 'images');
@@ -76,7 +82,7 @@ function toTags(prompt) {
 function refresh() {
   const files = fs.readdirSync(uploadDir).filter((f) => /\.(png|jpe?g)$/i.test(f));
   const selectStmt = db.prepare('SELECT id, prompt, tags, metadata, created_at FROM images WHERE filename = ?');
-  const insertStmt = db.prepare('INSERT INTO images (filename, prompt, tags, metadata, created_at, user_id) VALUES (?, ?, ?, ?, ?, 1)');
+  const insertStmt = db.prepare('INSERT INTO images (filename, prompt, tags, metadata, created_at, user_id) VALUES (?, ?, ?, ?, ?, NULL)');
   const updateStmt = db.prepare('UPDATE images SET prompt = ?, tags = ?, metadata = ?, created_at = ? WHERE id = ?');
   let inserted = 0;
   let updated = 0;

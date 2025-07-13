@@ -308,3 +308,12 @@ img {
   height: 220px;
   margin: 0 auto;
 }
+
+.admin-warning {
+  background-color: #dc2626;
+  color: #fff;
+  padding: 0.5rem;
+  text-align: center;
+  margin-bottom: 1rem;
+  font-weight: 600;
+}
