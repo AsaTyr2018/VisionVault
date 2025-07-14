@@ -49,22 +49,17 @@ If upgrading from an older version, the database schema is adjusted automaticall
 
 ### User Accounts
 
-The server now includes basic authentication using sessions. An initial `admin` account is created automatically *only if no other admin users exist*. Images that predate the account system are stored without an owner (displayed as "unknown"). Register new accounts on `login.html` or manage users from `admin.html` (admin only). **Delete the default `admin` user after creating your own admin account.** Regular users can upload and delete only their own images, while guests may browse the gallery.
+The server now includes basic authentication using sessions. An initial `admin` account (username **admin**, password **admin**) is created automatically *only if no other admin users exist*. Images that predate the account system are stored without an owner (displayed as "unknown"). Register new accounts on `login.html` or manage users from `admin.html` (admin only). **Delete or change the default `admin` account after creating your own admin user.** Regular users can upload and delete only their own images, while guests may browse the gallery.
 
 ### Docker Setup
 
-Use the scripts in `docker_setup/` to build a containerized instance of VisionVault.
-Run the builder and start the service with:
+VisionVault ships with a `docker-compose.yml` that spins up the service ready to use. From the project root simply run:
 
 ```bash
-python docker_setup/builder.py
-cd app
 docker compose up -d
 ```
 
-This creates a Docker environment with a persistent `data` volume for the SQLite
-database and uploads. Access the web interface at `http://localhost:3000`.
-To update an existing container without losing data, run `python update.py`.
+The compose file mounts `./public/images` and `./data` so uploads and the SQLite database persist locally. The web interface will be available at `http://localhost:3000`.
 
 ### API Overview
 
@@ -93,7 +88,7 @@ The Express server exposes the following endpoints:
 - **src/server.js** – Express server and API routes
 - **public/** – static HTML, JavaScript and styles for the dashboard, gallery and upload pages
 - **tools/refreshMetadata.js** – utility script to rescan existing images and fill in metadata
-- **docker_setup/** – helper scripts for building container images
+- **docker-compose.yml** – Docker compose file to run the service
 - **prestart.sh** – optional script to pull updates and install dependencies
 
 The default `index.html` now shows a dashboard with basic statistics. Browse images through `public/gallery.html`. Upload images via `public/upload.html`. Hover an image in the gallery to preview its main tag or open the metadata drawer for complete details.
