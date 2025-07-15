@@ -20,6 +20,7 @@ const loraListEl = document.getElementById('loraList');
 const yearSelect = document.getElementById('yearFilter');
 const monthSelect = document.getElementById('monthFilter');
 const userSelect = document.getElementById('userFilter');
+const captionSearchCb = document.getElementById('captionSearch');
 
 // Simple helper so all debug output is grouped and easy to filter
 function debug(...args) {
@@ -40,7 +41,8 @@ let filters = {
   year: '',
   month: '',
   user: '',
-  sort: 'date_desc'
+  sort: 'date_desc',
+  captionMode: false
 };
 
 let session = {};
@@ -66,6 +68,16 @@ const qParam = urlParams.get('q');
 if (qParam) {
   filters.q = qParam;
   if (searchInput) searchInput.value = qParam;
+}
+const captionParam = urlParams.get('captionMode');
+if (captionParam === 'true') {
+  filters.captionMode = true;
+  if (captionSearchCb) captionSearchCb.checked = true;
+  const kwInput = document.getElementById('keywordFilter');
+  if (kwInput && qParam) {
+    kwInput.value = qParam;
+    if (searchInput) searchInput.value = '';
+  }
 }
 const tagParam = urlParams.get('tag');
 if (tagParam) {
@@ -117,6 +129,7 @@ function buildQuery() {
   if (filters.month) params.set('month', filters.month);
   if (filters.user) params.set('user', filters.user);
   if (filters.sort) params.set('sort', filters.sort);
+  if (filters.captionMode) params.set('captionMode', 'true');
   params.set('offset', offset);
   params.set('limit', limit);
   return params.toString();
@@ -476,7 +489,15 @@ toggleSidebarBtn.addEventListener('click', () => {
 
 filterForm.addEventListener('submit', (e) => {
   e.preventDefault();
-  filters.tag = document.getElementById('keywordFilter').value.trim();
+  const kw = document.getElementById('keywordFilter').value.trim();
+  if (captionSearchCb && captionSearchCb.checked) {
+    filters.q = kw;
+    filters.captionMode = true;
+    filters.tag = '';
+  } else {
+    filters.tag = kw;
+    filters.captionMode = false;
+  }
   filters.resolution = document.getElementById('resFilter').value;
   filters.year = yearSelect ? yearSelect.value : '';
   filters.month = monthSelect ? monthSelect.value : '';
