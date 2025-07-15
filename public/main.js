@@ -445,6 +445,7 @@ function openDrawer(img) {
   drawerContent.innerHTML = `
     <h3>Metadata</h3>
     <p><strong>Prompt:</strong> ${img.prompt || ''}</p>
+    ${img.caption ? `<p><strong>Caption:</strong> ${img.caption}</p>` : ''}
     ${img.negativePrompt ? `<p><strong>Negative:</strong> ${img.negativePrompt}</p>` : ''}
     <p><strong>Model:</strong> ${img.model || ''}</p>
     <p><strong>Seed:</strong> ${img.seed || ''}</p>

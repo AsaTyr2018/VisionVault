@@ -6,6 +6,7 @@ const queueEl = document.getElementById('uploadQueue');
 const themeToggle = document.getElementById('themeToggle');
 const nsfwToggle = document.getElementById('nsfwToggle');
 const privateCheckbox = document.getElementById('privateCheckbox');
+const captionModeCheckbox = document.getElementById('captionMode');
 
 const queue = [];
 let uploading = false;
@@ -42,6 +43,9 @@ function processQueue() {
   const formData = new FormData();
   formData.append('images', file);
   formData.append('private', privateCheckbox && privateCheckbox.checked ? 'true' : 'false');
+  if (captionModeCheckbox) {
+    formData.append('captionMode', captionModeCheckbox.checked ? 'true' : 'false');
+  }
   const xhr = new XMLHttpRequest();
   xhr.open('POST', '/api/upload');
   xhr.upload.onprogress = (e) => {

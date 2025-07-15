@@ -14,8 +14,13 @@ db.prepare(`CREATE TABLE IF NOT EXISTS images (
   tags TEXT,
   metadata TEXT,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  user_id INTEGER
+  user_id INTEGER,
+  caption TEXT
 )`).run();
+
+db.prepare(
+  `CREATE VIRTUAL TABLE IF NOT EXISTS captions USING fts5(caption)`
+).run();
 
 db.prepare(`CREATE TABLE IF NOT EXISTS users (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -85,7 +90,8 @@ function toTags(prompt) {
 function refresh() {
   const files = fs.readdirSync(uploadDir).filter((f) => /\.(png|jpe?g)$/i.test(f));
   const selectStmt = db.prepare('SELECT id, prompt, tags, metadata, created_at FROM images WHERE filename = ?');
-  const insertStmt = db.prepare('INSERT INTO images (filename, prompt, tags, metadata, created_at, user_id) VALUES (?, ?, ?, ?, ?, NULL)');
+  const insertStmt = db.prepare('INSERT INTO images (filename, prompt, tags, metadata, created_at, user_id, caption) VALUES (?, ?, ?, ?, ?, NULL, ?)');
+  const captionStmt = db.prepare('INSERT INTO captions(rowid, caption) VALUES (?, ?)');
   const updateStmt = db.prepare('UPDATE images SET prompt = ?, tags = ?, metadata = ?, created_at = ? WHERE id = ?');
   let inserted = 0;
   let updated = 0;
@@ -105,8 +111,10 @@ function refresh() {
       createdAt = new Date().toISOString().replace('T', ' ').split('.')[0];
     }
 
+    const caption = metaString;
     if (!row) {
-      insertStmt.run(filename, prompt, tags, metaString, createdAt);
+      const info = insertStmt.run(filename, prompt, tags, metaString, createdAt, caption);
+      captionStmt.run(info.lastInsertRowid, caption);
       inserted++;
     } else if (!row.prompt || !row.tags || !row.metadata) {
       const newPrompt = row.prompt || prompt;
