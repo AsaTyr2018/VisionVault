@@ -33,7 +33,7 @@ VisionVault suits anyone exploring generative art. It keeps a detailed history o
 ## Getting Started
 
 ### Prerequisites
-- [Node.js](https://nodejs.org/) 16 or higher
+- [Node.js](https://nodejs.org/) **20 or higher**
 
 ### Install & Run
 ```bash
