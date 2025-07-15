@@ -20,6 +20,7 @@ VisionVault is a lightweight image board tailored for AI-generated artwork. Uplo
 - Single or bulk deletion of images
 - User accounts with role-based permissions (admin & user)
 - Users can mark uploads as private
+- Optional Caption Mode stores raw metadata as searchable captions
 - Admin panel includes a "Take Ownership" action to claim all images
 - Light/dark theme toggle for improved usability
 - Optional `prestart.sh` script to pull updates and reinstall dependencies
@@ -46,6 +47,7 @@ Start with an update check using:
 ```
 This script fetches Git updates and installs dependencies if required.
 If upgrading from an older version, the database schema is adjusted automatically.
+The server will also add the new `caption` column and build its search index on startup.
 
 ### User Accounts
 

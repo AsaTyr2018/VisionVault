@@ -48,6 +48,22 @@ if (!cols.some((c) => c.name === 'user_id')) {
 if (!cols.some((c) => c.name === 'private')) {
   db.prepare('ALTER TABLE images ADD COLUMN private INTEGER DEFAULT 0').run();
 }
+let addedCaption = false;
+if (!cols.some((c) => c.name === 'caption')) {
+  db.prepare('ALTER TABLE images ADD COLUMN caption TEXT').run();
+  addedCaption = true;
+}
+
+db.prepare(
+  `CREATE VIRTUAL TABLE IF NOT EXISTS captions USING fts5(caption)`
+).run();
+
+const capCount = db.prepare('SELECT count(*) as c FROM captions').get().c;
+if (addedCaption || capCount === 0) {
+  db.prepare(
+    'INSERT INTO captions(rowid, caption) SELECT id, caption FROM images WHERE caption IS NOT NULL'
+  ).run();
+}
 
 db.prepare(`CREATE TABLE IF NOT EXISTS users (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -268,12 +284,14 @@ app.post('/api/upload', requireAuth, upload.array('images'), (req, res) => {
   if (!files.length) return res.status(400).json({ error: 'No files uploaded' });
 
   const stmt = db.prepare(
-    'INSERT INTO images (filename, prompt, tags, metadata, created_at, user_id, private) VALUES (?, ?, ?, ?, ?, ?, ?)'
+    'INSERT INTO images (filename, prompt, tags, metadata, created_at, user_id, private, caption) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
   );
+  const captionStmt = db.prepare('INSERT INTO captions(rowid, caption) VALUES (?, ?)');
+  const captionMode = req.body.captionMode === 'true' || req.body.captionMode === '1';
   files.forEach((file) => {
     const metaString = extractParameters(file.path);
     const prompt = parsePrompt(metaString);
-    const tags = toTags(prompt).join(',');
+    const tags = captionMode ? '' : toTags(prompt).join(',');
     let createdAt;
     try {
       const stats = fs.statSync(file.path);
@@ -283,15 +301,20 @@ app.post('/api/upload', requireAuth, upload.array('images'), (req, res) => {
       createdAt = new Date().toISOString().replace('T', ' ').split('.')[0];
     }
     const priv = req.body.private === 'true' || req.body.private === '1' ? 1 : 0;
-    stmt.run(
+    const caption = captionMode ? metaString : null;
+    const info = stmt.run(
       path.basename(file.path),
       prompt,
       tags,
       metaString,
       createdAt,
       req.session.userId,
-      priv
+      priv,
+      caption
     );
+    if (caption) {
+      captionStmt.run(info.lastInsertRowid, caption);
+    }
   });
 
   res.json({ success: true, count: files.length });
@@ -311,7 +334,8 @@ app.get('/api/images', (req, res) => {
     year,
     month,
     user,
-    sort = 'date_desc'
+    sort = 'date_desc',
+    captionMode
   } = req.query;
   const conditions = [];
   const params = [];
@@ -324,8 +348,13 @@ app.get('/api/images', (req, res) => {
     params.push(`%${model}%`);
   }
   if (q) {
-    conditions.push('(prompt LIKE ? OR tags LIKE ? OR metadata LIKE ?)');
-    params.push(`%${q}%`, `%${q}%`, `%${q}%`);
+    if (captionMode === 'true') {
+      conditions.push('images.id IN (SELECT rowid FROM captions WHERE captions MATCH ?)');
+      params.push(`${q}*`);
+    } else {
+      conditions.push('(prompt LIKE ? OR tags LIKE ? OR metadata LIKE ?)');
+      params.push(`%${q}%`, `%${q}%`, `%${q}%`);
+    }
   }
   if (lora === 'true') {
     conditions.push('metadata LIKE ?');
@@ -390,7 +419,8 @@ app.get('/api/images', (req, res) => {
       hasLora: meta.hasLora,
       loras: meta.loras,
       uploader: r.username || 'unknown',
-      private: !!r.private
+      private: !!r.private,
+      caption: r.caption
     };
   });
   res.json(images);
